@@ -1,0 +1,17 @@
+# git ignore file
+
+### folders
+packages/
+bin/
+obj/
+erl.Oracle.TnsNames/lib/net40/
+
+
+### files
+*.DotSettings.user
+*.csproj.DotSettings
+*.csproj.user
+*.suo
+*.nupkg
+*.nupkg.bak
+NuGet.log

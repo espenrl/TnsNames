@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>erl.Oracle.TnsNames</id>
+    <version>1.0.2</version>
+    <title>Oracle TNS names library for .NET</title>
+    <authors>erl</authors>
+    <owners></owners>
+    <description>
+      Resolve and parse TNS names files.
+    </description>
+    <releaseNotes>
+    </releaseNotes>
+    <summary>
+      Resolve and parse TNS names files.
+    </summary>
+    <language>en-US</language>
+    <projectUrl>https://github.com/espenrl/TnsNames/</projectUrl>
+    <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <copyright>Copyright (c) 2015 Espen Røvik Larsen</copyright>
+    <dependencies />
+    <references />
+    <tags />
+  </metadata>
+  <files>
+    <file src="lib\" target="lib" />
+    <file src="tools\" target="tools" />
+  </files>
+</package>
