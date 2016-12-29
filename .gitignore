@@ -4,14 +4,18 @@
 packages/
 bin/
 obj/
-erl.Oracle.TnsNames/lib/net40/
+node_modules/
+.vs/
 
 
 ### files
 *.DotSettings.user
 *.csproj.DotSettings
 *.csproj.user
+*.xproj.user
 *.suo
 *.nupkg
 *.nupkg.bak
+*.targets
+project.lock.json
 NuGet.log

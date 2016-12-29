@@ -10,7 +10,7 @@ namespace erl.Oracle.TnsNames
             try
             {
                 var rootFilesInfos = TnsNames.ResolveRootTnsNamesFiles();
-                var allFiles = TnsNames.OpenTnsNamesFiles(rootFilesInfos, ignoreErrors: false, followIFileEntries: true);
+                var allFiles = TnsNames.OpenTnsNamesFiles(rootFilesInfos, ignoreErrors: true, followIFileEntries: true);
 
                 Console.WriteLine("### Resolved root TNS names files\n");
                 foreach (var fileInfo in rootFilesInfos.OrderBy(f => f.Source).ThenBy(f => f.SourceOrder))

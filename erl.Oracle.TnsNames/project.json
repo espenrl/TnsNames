@@ -1,0 +1,30 @@
+{
+  "authors": [ "erl" ],
+  "buildOptions": {
+    "define": [ "TRACE", "NETSTANDARD", "WINRT", "PORTABLE", "NET45", "NET45PLUS", "NET40PLUS", "NET35PLUS", "NET30PLUS", "NET20PLUS" ],
+    "nowarn": [
+      "CS1591",
+      "CS3021"
+    ],
+    "warningsAsErrors": false,
+    "xmlDoc": true
+  },
+  "dependencies": {
+    "NETStandard.Library": "1.6.1"
+  },
+  "description": "Resolve and parse TNS names files.",
+
+  "frameworks": {
+    "netstandard1.3": {
+    }
+  },
+  "packOptions": {
+    "owners": [ "erl" ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/espenrl/TnsNames"
+    },
+    "summary": "Resolve and parse TNS names files."
+  },
+  "version": "1.1.0"
+}
