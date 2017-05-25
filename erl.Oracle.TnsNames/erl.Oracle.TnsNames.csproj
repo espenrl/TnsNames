@@ -10,11 +10,16 @@
 
   <!-- NuGet package -->
   <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>erl</Authors>
-    <Description>Resolve and parse TNS names files.</Description>
+    <Title>Oracle TNS names library</Title>
+    <Description>Resolve and parse Oracle TNS names files.</Description>
     <PackageId>erl.Oracle.TnsNames</PackageId>
+    <PackageTags>tns;tnsnames;oracle</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/espenrl/TnsNames</PackageProjectUrl>
+    <PackageLicenseUrl>http://opensource.org/licenses/MIT</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/espenrl/TnsNames</RepositoryUrl>
   </PropertyGroup>
-
 </Project>
