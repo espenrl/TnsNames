@@ -9,16 +9,13 @@ namespace erl.Oracle.TnsNames.ANTLR
     /// <summary>
     /// Used for internal representation during parse of TNS names file
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
     public sealed class TnsNameNode
     {
         internal TnsNameNode([NotNull] string tnsName, [NotNull] TnsNamesParser.ParameterContext parameterContext)
         {
-            if (tnsName == null) throw new ArgumentNullException(nameof(tnsName));
-            if (parameterContext == null) throw new ArgumentNullException(nameof(parameterContext));
-
-            TnsName = tnsName;
-            ParameterContext = parameterContext;
+            TnsName = tnsName ?? throw new ArgumentNullException(nameof(tnsName));
+            ParameterContext = parameterContext ?? throw new ArgumentNullException(nameof(parameterContext));
         }
 
         public TnsNamesParser.ParameterContext ParameterContext { get; }

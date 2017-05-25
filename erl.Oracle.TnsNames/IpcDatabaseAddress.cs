@@ -7,7 +7,7 @@ namespace erl.Oracle.TnsNames
     /// <summary>
     /// 
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
     [PublicAPI]
     public sealed class IpcDatabaseAddress : IDatabaseAddress
     {
@@ -19,12 +19,9 @@ namespace erl.Oracle.TnsNames
         /// <param name="rawAddress"></param>
         public IpcDatabaseAddress([NotNull] string protocol, [NotNull] string key, [NotNull] string rawAddress)
         {
-            if (protocol == null) throw new ArgumentNullException(nameof(protocol));
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (rawAddress == null) throw new ArgumentNullException(nameof(rawAddress));
-            Protocol = protocol;
-            Key = key;
-            RawAddress = rawAddress;
+            Protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
+            Key = key ?? throw new ArgumentNullException(nameof(key));
+            RawAddress = rawAddress ?? throw new ArgumentNullException(nameof(rawAddress));
         }
 
         /// <inheritdoc />

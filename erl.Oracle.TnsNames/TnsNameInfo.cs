@@ -6,7 +6,7 @@ namespace erl.Oracle.TnsNames
     /// <summary>
     /// Info about a TNS name.
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
     [PublicAPI]
     public sealed class TnsNameInfo
     {

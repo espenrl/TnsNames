@@ -7,7 +7,7 @@ namespace erl.Oracle.TnsNames
     /// <summary>
     /// Content of a TNS names file.
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay, nq}")]
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
     [PublicAPI]
     public sealed class TnsNamesFile
     {
@@ -27,15 +27,13 @@ namespace erl.Oracle.TnsNames
         public TnsNamesFile(TnsNamesFileInfo info, [NotNull] TnsNamesFileInfo[] iFileEntries, [NotNull] TnsNameInfo[] tnsNames)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
-            if (iFileEntries == null) throw new ArgumentNullException(nameof(iFileEntries));
-            if (tnsNames == null) throw new ArgumentNullException(nameof(tnsNames));
 
             Parent = info.Parent;
             Filepath = info.Filepath;
             Source = info.Source;
             SourceOrder = info.SourceOrder;
-            TnsNames = tnsNames;
-            IfileEntries = iFileEntries;
+            TnsNames = tnsNames ?? throw new ArgumentNullException(nameof(tnsNames));
+            IfileEntries = iFileEntries ?? throw new ArgumentNullException(nameof(iFileEntries));
 
             foreach (var tnsNameInfo in tnsNames)
             {

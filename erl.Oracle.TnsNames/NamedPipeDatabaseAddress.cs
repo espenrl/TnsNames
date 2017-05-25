@@ -8,7 +8,7 @@ namespace erl.Oracle.TnsNames
     /// <summary>
     /// 
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
     [PublicAPI]
     public sealed class NamedPipeDatabaseAddress : IDatabaseAddress
     {
@@ -21,15 +21,10 @@ namespace erl.Oracle.TnsNames
         /// <param name="rawAddress"></param>
         public NamedPipeDatabaseAddress([NotNull] string protocol, [NotNull] string server, [NotNull] string pipe, [NotNull] string rawAddress)
         {
-            if (protocol == null) throw new ArgumentNullException(nameof(protocol));
-            if (server == null) throw new ArgumentNullException(nameof(server));
-            if (pipe == null) throw new ArgumentNullException(nameof(pipe));
-            if (rawAddress == null) throw new ArgumentNullException(nameof(rawAddress));
-
-            Protocol = protocol;
-            Server = server;
-            Pipe = pipe;
-            RawAddress = rawAddress;
+            Protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
+            Server = server ?? throw new ArgumentNullException(nameof(server));
+            Pipe = pipe ?? throw new ArgumentNullException(nameof(pipe));
+            RawAddress = rawAddress ?? throw new ArgumentNullException(nameof(rawAddress));
         }
 
         /// <inheritdoc />

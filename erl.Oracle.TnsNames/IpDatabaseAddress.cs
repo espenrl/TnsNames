@@ -7,7 +7,7 @@ namespace erl.Oracle.TnsNames
     /// <summary>
     /// Database address for a TNS name.
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
     [PublicAPI]
     public sealed class IpDatabaseAddress : IDatabaseAddress
     {
@@ -20,14 +20,11 @@ namespace erl.Oracle.TnsNames
         /// <param name="rawAddress"></param>
         public IpDatabaseAddress([NotNull] string protocol, [NotNull] string host, int port, [NotNull] string rawAddress)
         {
-            if (protocol == null) throw new ArgumentNullException(nameof(protocol));
-            if (host == null) throw new ArgumentNullException(nameof(host));
             if (port < 1 || port > 65535) throw new ArgumentOutOfRangeException(nameof(port), port, "Port should be in range 1-65535.");
-            if (rawAddress == null) throw new ArgumentNullException(nameof(rawAddress));
-            Protocol = protocol;
-            Host = host;
+            Protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
+            Host = host ?? throw new ArgumentNullException(nameof(host));
             Port = port;
-            RawAddress = rawAddress;
+            RawAddress = rawAddress ?? throw new ArgumentNullException(nameof(rawAddress));
         }
 
         /// <inheritdoc />

@@ -7,7 +7,7 @@ namespace erl.Oracle.TnsNames
     /// <summary>
     ///
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay, nq}")]
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
     [PublicAPI]
     public class UnknownDatabaseAddress : IDatabaseAddress
     {
@@ -18,10 +18,8 @@ namespace erl.Oracle.TnsNames
         /// <param name="rawAddress"></param>
         public UnknownDatabaseAddress([NotNull] string protocol, [NotNull] string rawAddress)
         {
-            if (protocol == null) throw new ArgumentNullException(nameof(protocol));
-            if (rawAddress == null) throw new ArgumentNullException(nameof(rawAddress));
-            Protocol = protocol;
-            RawAddress = rawAddress;
+            Protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
+            RawAddress = rawAddress ?? throw new ArgumentNullException(nameof(rawAddress));
         }
 
         /// <inheritdoc />

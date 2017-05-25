@@ -7,6 +7,8 @@ using Microsoft.Win32.SafeHandles;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 // ReSharper disable InconsistentNaming
+// ReSharper disable MemberCanBePrivate.Local
+// ReSharper disable UnusedMember.Global
 
 // Fetched from: http://www.codeproject.com/Articles/15633/Manipulating-NTFS-Junction-Points-in-NET
 

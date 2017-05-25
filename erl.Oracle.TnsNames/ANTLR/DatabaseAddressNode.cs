@@ -7,7 +7,7 @@ namespace erl.Oracle.TnsNames.ANTLR
     /// <summary>
     /// Used for internal representation during parse of TNS names file
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
     public sealed class DatabaseAddressNode
     {
         public DatabaseAddressNode(TnsNamesParser.ParameterContext parameterContext)

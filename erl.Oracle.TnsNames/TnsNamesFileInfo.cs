@@ -7,15 +7,13 @@ namespace erl.Oracle.TnsNames
     /// <summary>
     /// Info about a TNS names file.
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay, nq}")]
+    [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
     [PublicAPI]
     public sealed class TnsNamesFileInfo
     {
         public TnsNamesFileInfo(string filepath, TnsNamesSource source, TnsNamesFileInfo parent = null, int sourceOrder = 1)
         {
-            if (filepath == null) throw new ArgumentNullException(nameof(filepath));
-
-            Filepath = filepath;
+            Filepath = filepath ?? throw new ArgumentNullException(nameof(filepath));
             Source = source;
             SourceOrder = sourceOrder;
             Parent = parent;
