@@ -1,100 +1,23 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
 {
-    /// <summary>
-    /// A tree structure used to record the semantic context in which
-    /// an ATN configuration is valid.
-    /// </summary>
-    /// <remarks>
-    /// A tree structure used to record the semantic context in which
-    /// an ATN configuration is valid.  It's either a single predicate,
-    /// a conjunction
-    /// <c>p1&amp;&amp;p2</c>
-    /// , or a sum of products
-    /// <c>p1||p2</c>
-    /// .
-    /// <p>I have scoped the
-    /// <see cref="AND"/>
-    /// ,
-    /// <see cref="OR"/>
-    /// , and
-    /// <see cref="Predicate"/>
-    /// subclasses of
-    /// <see cref="SemanticContext"/>
-    /// within the scope of this outer class.</p>
-    /// </remarks>
     public abstract class SemanticContext
     {
-        /// <summary>
-        /// The default
-        /// <see cref="SemanticContext"/>
-        /// , which is semantically equivalent to
-        /// a predicate of the form
-        /// <c/>
-        /// 
-        /// true}?}.
-        /// </summary>
-        public static readonly SemanticContext None = new SemanticContext.Predicate();
+        public static readonly SemanticContext NONE = new SemanticContext.Predicate();
 
-        /// <summary>
-        /// For context independent predicates, we evaluate them without a local
-        /// context (i.e., null context).
-        /// </summary>
-        /// <remarks>
-        /// For context independent predicates, we evaluate them without a local
-        /// context (i.e., null context). That way, we can evaluate them without
-        /// having to create proper rule-specific context during prediction (as
-        /// opposed to the parser, which creates them naturally). In a practical
-        /// sense, this avoids a cast exception from RuleContext to myruleContext.
-        /// <p>For context dependent predicates, we must pass in a local context so that
-        /// references such as $arg evaluate properly as _localctx.arg. We only
-        /// capture context dependent predicates in the context in which we begin
-        /// prediction, so we passed in the outer context here in case of context
-        /// dependent predicate evaluation.</p>
-        /// </remarks>
         public abstract bool Eval<Symbol, ATNInterpreter>(Recognizer<Symbol, ATNInterpreter> parser, RuleContext parserCallStack)
             where ATNInterpreter : ATNSimulator;
-        /// <summary>Evaluate the precedence predicates for the context and reduce the result.</summary>
-        /// <param name="parser">The parser instance.</param>
-        /// <param name="parserCallStack"/>
-        /// <returns>
-        /// The simplified semantic context after precedence predicates are
-        /// evaluated, which will be one of the following values.
-        /// <ul>
-        /// <li>
-        /// <see cref="None"/>
-        /// : if the predicate simplifies to
-        /// <see langword="true"/>
-        /// after
-        /// precedence predicates are evaluated.</li>
-        /// <li>
-        /// <see langword="null"/>
-        /// : if the predicate simplifies to
-        /// <see langword="false"/>
-        /// after
-        /// precedence predicates are evaluated.</li>
-        /// <li>
-        /// <c>this</c>
-        /// : if the semantic context is not changed as a result of
-        /// precedence predicate evaluation.</li>
-        /// <li>A non-
-        /// <see langword="null"/>
-        /// 
-        /// <see cref="SemanticContext"/>
-        /// : the new simplified
-        /// semantic context after precedence predicates are evaluated.</li>
-        /// </ul>
-        /// </returns>
-        public virtual SemanticContext EvalPrecedence<Symbol, ATNInterpreter>(Recognizer<Symbol, ATNInterpreter> parser, RuleContext parserCallStack)
+
+		public virtual SemanticContext EvalPrecedence<Symbol, ATNInterpreter>(Recognizer<Symbol, ATNInterpreter> parser, RuleContext parserCallStack)
             where ATNInterpreter : ATNSimulator
         {
             return this;
@@ -182,7 +105,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
             {
                 if (parser.Precpred(parserCallStack, precedence))
                 {
-                    return SemanticContext.None;
+                    return SemanticContext.NONE;
                 }
                 else
                 {
@@ -223,21 +146,8 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
             }
         }
 
-        /// <summary>
-        /// This is the base class for semantic context "operators", which operate on
-        /// a collection of semantic context "operands".
-        /// </summary>
-        /// <since>4.3</since>
         public abstract class Operator : SemanticContext
         {
-            /// <summary>Gets the operands for the semantic context operator.</summary>
-            /// <returns>
-            /// a collection of
-            /// <see cref="SemanticContext"/>
-            /// operands for the
-            /// operator.
-            /// </returns>
-            /// <since>4.3</since>
             [NotNull]
             public abstract ICollection<SemanticContext> Operands
             {
@@ -245,10 +155,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
             }
         }
 
-        /// <summary>
-        /// A semantic context which is true whenever none of the contained contexts
-        /// is false.
-        /// </summary>
         public class AND : SemanticContext.Operator
         {
             [NotNull]
@@ -310,12 +216,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
                 return MurmurHash.HashCode(opnds, typeof(SemanticContext.AND).GetHashCode());
             }
 
-            /// <summary>
-            /// <inheritDoc/>
-            /// <p>
-            /// The evaluation of predicates by this context is short-circuiting, but
-            /// unordered.</p>
-            /// </summary>
             public override bool Eval<Symbol, ATNInterpreter>(Recognizer<Symbol, ATNInterpreter> parser, RuleContext parserCallStack)
             {
                 foreach (SemanticContext opnd in opnds)
@@ -343,7 +243,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
                     }
                     else
                     {
-                        if (evaluated != None)
+                        if (evaluated != NONE)
                         {
                             // Reduce the result by skipping true elements
                             operands.Add(evaluated);
@@ -357,12 +257,12 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
                 if (operands.Count == 0)
                 {
                     // all elements were true, so the AND context is true
-                    return None;
+                    return NONE;
                 }
                 SemanticContext result = operands[0];
                 for (int i = 1; i < operands.Count; i++)
                 {
-                    result = SemanticContext.And(result, operands[i]);
+                    result = SemanticContext.AndOp(result, operands[i]);
                 }
                 return result;
             }
@@ -373,10 +273,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
             }
         }
 
-        /// <summary>
-        /// A semantic context which is true whenever at least one of the contained
-        /// contexts is true.
-        /// </summary>
         public class OR : SemanticContext.Operator
         {
             [NotNull]
@@ -438,12 +334,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
                 return MurmurHash.HashCode(opnds, typeof(SemanticContext.OR).GetHashCode());
             }
 
-            /// <summary>
-            /// <inheritDoc/>
-            /// <p>
-            /// The evaluation of predicates by this context is short-circuiting, but
-            /// unordered.</p>
-            /// </summary>
             public override bool Eval<Symbol, ATNInterpreter>(Recognizer<Symbol, ATNInterpreter> parser, RuleContext parserCallStack)
             {
                 foreach (SemanticContext opnd in opnds)
@@ -464,10 +354,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
                 {
                     SemanticContext evaluated = context.EvalPrecedence(parser, parserCallStack);
                     differs |= (evaluated != context);
-                    if (evaluated == None)
+                    if (evaluated == NONE)
                     {
                         // The OR context is true if any element is true
-                        return None;
+                        return NONE;
                     }
                     else
                     {
@@ -490,7 +380,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
                 SemanticContext result = operands[0];
                 for (int i = 1; i < operands.Count; i++)
                 {
-                    result = SemanticContext.Or(result, operands[i]);
+                    result = SemanticContext.OrOp(result, operands[i]);
                 }
                 return result;
             }
@@ -501,13 +391,13 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
             }
         }
 
-        public static SemanticContext And(SemanticContext a, SemanticContext b)
+        public static SemanticContext AndOp(SemanticContext a, SemanticContext b)
         {
-            if (a == null || a == None)
+            if (a == null || a == NONE)
             {
                 return b;
             }
-            if (b == null || b == None)
+            if (b == null || b == NONE)
             {
                 return a;
             }
@@ -519,8 +409,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
             return result;
         }
 
-        /// <seealso cref="ParserATNSimulator.GetPredsForAmbigAlts(erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen.BitSet, ATNConfigSet, int)"/>
-        public static SemanticContext Or(SemanticContext a, SemanticContext b)
+        public static SemanticContext OrOp(SemanticContext a, SemanticContext b)
         {
             if (a == null)
             {
@@ -530,9 +419,9 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
             {
                 return a;
             }
-            if (a == None || b == None)
+            if (a == NONE || b == NONE)
             {
-                return None;
+                return NONE;
             }
             SemanticContext.OR result = new SemanticContext.OR(a, b);
             if (result.opnds.Length == 1)
@@ -548,11 +437,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
                 Collections.EmptyList<PrecedencePredicate>();
 
             List<PrecedencePredicate> result = collection.OfType<PrecedencePredicate>().ToList();
-#if NET40PLUS
-            collection.ExceptWith(result);
-#else
             collection.ExceptWith(result.Cast<SemanticContext>());
-#endif
             return result;
         }
     }

@@ -1,6 +1,7 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
@@ -96,6 +97,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
         }
 
         /// <summary>Gets the name of the rule associated with this rule tag.</summary>
+        /// <remarks>Gets the name of the rule associated with this rule tag.</remarks>
         /// <returns>The name of the parser rule associated with this rule tag.</returns>
         [NotNull]
         public string RuleName
@@ -107,6 +109,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
         }
 
         /// <summary>Gets the label associated with the rule tag.</summary>
+        /// <remarks>Gets the label associated with the rule tag.</remarks>
         /// <returns>
         /// The name of the label associated with the rule tag, or
         /// <see langword="null"/>

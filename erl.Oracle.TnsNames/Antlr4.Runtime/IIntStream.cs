@@ -1,6 +1,8 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime
@@ -18,7 +20,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
     /// the stream was constructed. The following is a list of initializing methods:</p>
     /// <ul>
     /// <li>
-    /// <see cref="La(int)"/>
+    /// <see cref="LA(int)"/>
     /// </li>
     /// <li>
     /// <see cref="Consume()"/>
@@ -61,7 +63,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// if an attempt is made to consume the the
         /// end of the stream (i.e. if
         /// <c>LA(1)==</c>
-        /// <see cref="IntStreamConstants.Eof">EOF</see>
+        /// <see cref="IntStreamConstants.EOF">EOF</see>
         /// before calling
         /// <c>consume</c>
         /// ).
@@ -113,7 +115,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// <paramref name="i"/>
         /// represents a position at or beyond the end of the stream,
         /// this method returns
-        /// <see cref="IntStreamConstants.Eof"/>
+        /// <see cref="IntStreamConstants.EOF"/>
         /// .</p>
         /// <p>The return value is unspecified if
         /// <c>i&lt;0</c>
@@ -128,7 +130,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// if the stream does not support
         /// retrieving the value of the specified symbol
         /// </exception>
-        int La(int i);
+        int LA(int i);
 
         /// <summary>
         /// A mark provides a guarantee that
@@ -242,7 +244,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// though
         /// <paramref name="index"/>
         /// was the index of the EOF symbol. After this method
-        /// returns without throwing an exception, then at least one of the following
+        /// returns without throwing an exception, the at least one of the following
         /// will be true.
         /// <ul>
         /// <li>
@@ -259,7 +261,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// <li>
         /// <c>LA(1)</c>
         /// returns
-        /// <see cref="IntStreamConstants.Eof"/>
+        /// <see cref="IntStreamConstants.EOF"/>
         /// </li>
         /// </ul>
         /// This operation is guaranteed to not throw an exception if
@@ -288,6 +290,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// Returns the total number of symbols in the stream, including a single EOF
         /// symbol.
         /// </summary>
+        /// <remarks>
+        /// Returns the total number of symbols in the stream, including a single EOF
+        /// symbol.
+        /// </remarks>
         /// <exception cref="System.NotSupportedException">
         /// if the size of the stream is
         /// unknown.
@@ -315,11 +321,11 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
     {
         /// <summary>
         /// The value returned by
-        /// <see cref="IIntStream.La(int)">LA()</see>
+        /// <see cref="IIntStream.LA(int)">LA()</see>
         /// when the end of the stream is
         /// reached.
         /// </summary>
-        public const int Eof = -1;
+        public const int EOF = -1;
 
         /// <summary>
         /// The value returned by

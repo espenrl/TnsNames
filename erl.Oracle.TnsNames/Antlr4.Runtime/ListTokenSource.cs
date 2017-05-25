@@ -1,8 +1,10 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime
@@ -15,7 +17,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
     /// <see cref="IToken"/>
     /// objects.
     /// <p>If the final token in the list is an
-    /// <see cref="TokenConstants.Eof"/>
+    /// <see cref="TokenConstants.EOF"/>
     /// token, it will be used
     /// as the EOF token for every call to
     /// <see cref="NextToken()"/>
@@ -58,6 +60,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         protected internal int i;
 
         /// <summary>This field caches the EOF token for the token source.</summary>
+        /// <remarks>This field caches the EOF token for the token source.</remarks>
         protected internal IToken eofToken;
 
         /// <summary>
@@ -195,12 +198,12 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                         }
                     }
                     int stop = Math.Max(-1, start - 1);
-                    eofToken = _factory.Create(Tuple.Create((ITokenSource)this, InputStream), TokenConstants.Eof, "EOF", TokenConstants.DefaultChannel, start, stop, Line, Column);
+                    eofToken = _factory.Create(Tuple.Create((ITokenSource)this, InputStream), TokenConstants.EOF, "EOF", TokenConstants.DefaultChannel, start, stop, Line, Column);
                 }
                 return eofToken;
             }
             IToken t = tokens[i];
-            if (i == tokens.Count - 1 && t.Type == TokenConstants.Eof)
+            if (i == tokens.Count - 1 && t.Type == TokenConstants.EOF)
             {
                 eofToken = t;
             }

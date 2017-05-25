@@ -1,6 +1,7 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,6 +9,7 @@ using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Tree;
+using erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
 {
@@ -186,6 +188,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
         /// Set the delimiters used for marking rule and token tags within concrete
         /// syntax used by the tree pattern parser.
         /// </summary>
+        /// <remarks>
+        /// Set the delimiters used for marking rule and token tags within concrete
+        /// syntax used by the tree pattern parser.
+        /// </remarks>
         /// <param name="start">The start delimiter.</param>
         /// <param name="stop">The stop delimiter.</param>
         /// <param name="escapeLeft">The escape sequence to use for escaping a start or stop delimiter.</param>
@@ -316,7 +322,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
                 throw new ParseTreePatternMatcher.CannotInvokeStartRule(e);
             }
             // Make sure tree pattern compilation checks for a complete parse
-            if (tokens.La(1) != TokenConstants.Eof)
+            if (tokens.LA(1) != TokenConstants.EOF)
             {
                 throw new ParseTreePatternMatcher.StartRuleDoesNotConsumeFullPattern();
             }
@@ -341,6 +347,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
         /// Used to collect to the grammar file name, token names, rule names for
         /// used to parse the pattern into a parse tree.
         /// </summary>
+        /// <remarks>
+        /// Used to collect to the grammar file name, token names, rule names for
+        /// used to parse the pattern into a parse tree.
+        /// </remarks>
         [NotNull]
         public virtual Parser Parser
         {
@@ -484,7 +494,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
         /// <summary>
         /// Is
         /// <paramref name="t"/>
-        /// 
+        ///
         /// <c>(expr &lt;expr&gt;)</c>
         /// subtree?
         /// </summary>
@@ -552,7 +562,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
                     AntlrInputStream @in = new AntlrInputStream(textChunk.Text);
                     lexer.SetInputStream(@in);
                     IToken t = lexer.NextToken();
-                    while (t.Type != TokenConstants.Eof)
+                    while (t.Type != TokenConstants.EOF)
                     {
                         tokens.Add(t);
                         t = lexer.NextToken();
@@ -575,7 +585,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
             int p = 0;
             int n = pattern.Length;
             IList<Chunk> chunks = new List<Chunk>();
-            StringBuilder buf = new StringBuilder();
             // find all start and stop indexes first, then collect
             IList<int> starts = new List<int>();
             IList<int> stops = new List<int>();

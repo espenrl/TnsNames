@@ -1,6 +1,8 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
+using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
@@ -10,19 +12,20 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
     public sealed class AtomTransition : Transition
     {
         /// <summary>The token type or character value; or, signifies special label.</summary>
-        public readonly int label;
+        /// <remarks>The token type or character value; or, signifies special label.</remarks>
+        public readonly int token;
 
-        public AtomTransition(ATNState target, int label)
+		public AtomTransition(ATNState target, int token)
             : base(target)
         {
-            this.label = label;
+			this.token = token;
         }
 
         public override erl.Oracle.TnsNames.Antlr4.Runtime.Atn.TransitionType TransitionType
         {
             get
             {
-                return erl.Oracle.TnsNames.Antlr4.Runtime.Atn.TransitionType.Atom;
+                return erl.Oracle.TnsNames.Antlr4.Runtime.Atn.TransitionType.ATOM;
             }
         }
 
@@ -30,19 +33,19 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
         {
             get
             {
-                return IntervalSet.Of(label);
+				return IntervalSet.Of(token);
             }
         }
 
         public override bool Matches(int symbol, int minVocabSymbol, int maxVocabSymbol)
         {
-            return label == symbol;
+			return token == symbol;
         }
 
         [return: NotNull]
         public override string ToString()
         {
-            return label.ToString();
+			return token.ToString();
         }
     }
 }

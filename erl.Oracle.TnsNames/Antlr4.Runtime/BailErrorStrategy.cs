@@ -1,6 +1,8 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
@@ -68,6 +70,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// Make sure we don't attempt to recover inline; if the parser
         /// successfully recovers, it won't throw an exception.
         /// </summary>
+        /// <remarks>
+        /// Make sure we don't attempt to recover inline; if the parser
+        /// successfully recovers, it won't throw an exception.
+        /// </remarks>
         /// <exception cref="erl.Oracle.TnsNames.Antlr4.Runtime.RecognitionException"/>
         public override IToken RecoverInline(Parser recognizer)
         {
@@ -80,6 +86,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         }
 
         /// <summary>Make sure we don't attempt to recover from problems in subrules.</summary>
+        /// <remarks>Make sure we don't attempt to recover from problems in subrules.</remarks>
         public override void Sync(Parser recognizer)
         {
         }

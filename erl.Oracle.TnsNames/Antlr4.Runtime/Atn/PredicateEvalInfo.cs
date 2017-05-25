@@ -1,7 +1,9 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using erl.Oracle.TnsNames.Antlr4.Runtime;
+using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
@@ -10,11 +12,16 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
     /// This class represents profiling event information for semantic predicate
     /// evaluations which occur during prediction.
     /// </summary>
-    /// <seealso cref="ParserATNSimulator.EvalSemanticContext(erl.Oracle.TnsNames.Antlr4.Runtime.Dfa.DFAState.PredPrediction[], erl.Oracle.TnsNames.Antlr4.Runtime.ParserRuleContext, bool)"/>
+    /// <remarks>
+    /// This class represents profiling event information for semantic predicate
+    /// evaluations which occur during prediction.
+    /// </remarks>
+    /// <seealso cref="ParserATNSimulator.EvalSemanticContext(Dfa.PredPrediction[], ParserRuleContext, bool)"/>
     /// <since>4.3</since>
     public class PredicateEvalInfo : DecisionEventInfo
     {
         /// <summary>The semantic context which was evaluated.</summary>
+        /// <remarks>The semantic context which was evaluated.</remarks>
         public readonly SemanticContext semctx;
 
         /// <summary>
@@ -24,7 +31,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
         /// . Note that other ATN
         /// configurations may predict the same alternative which are guarded by
         /// other semantic contexts and/or
-        /// <see cref="SemanticContext.None"/>
+        /// <see cref="SemanticContext.NONE"/>
         /// .
         /// </summary>
         public readonly int predictedAlt;
@@ -61,7 +68,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
         /// <see cref="predictedAlt"/>
         /// for more information.
         /// </param>
-        /// <seealso cref="ParserATNSimulator.EvalSemanticContext(SemanticContext, ParserRuleContext, int)"/>
+        /// <seealso cref="ParserATNSimulator.EvalSemanticContext(SemanticContext, ParserRuleContext, int, bool)"/>
         /// <seealso cref="SemanticContext.Eval"/>
         public PredicateEvalInfo(SimulatorState state, int decision, ITokenStream input, int startIndex, int stopIndex, SemanticContext semctx, bool evalResult, int predictedAlt)
             : base(decision, state, input, startIndex, stopIndex, state.useContext)

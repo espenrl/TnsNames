@@ -1,16 +1,18 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System.Collections.Generic;
-using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
 {
     /// <summary>A generic set of integers.</summary>
+    /// <remarks>A generic set of integers.</remarks>
     /// <seealso cref="IntervalSet"/>
     public interface IIntSet
     {
         /// <summary>Adds the specified value to the current set.</summary>
+        /// <remarks>Adds the specified value to the current set.</remarks>
         /// <param name="el">the value to add</param>
         /// <exception>
         /// IllegalStateException
@@ -33,7 +35,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
         /// treated as though it were an empty set.
         /// </param>
         /// <returns>
-        /// 
+        ///
         /// <c>this</c>
         /// (to support chained calls)
         /// </returns>
@@ -186,6 +188,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
         IIntSet Subtract(IIntSet a);
 
         /// <summary>Return the total number of elements represented by the current set.</summary>
+        /// <remarks>Return the total number of elements represented by the current set.</remarks>
         /// <returns>
         /// the total number of elements represented by the current set,
         /// regardless of the manner in which the elements are stored.
@@ -201,7 +204,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
         /// if this set contains no elements.
         /// </summary>
         /// <returns>
-        /// 
+        ///
         /// <see langword="true"/>
         /// if the current set contains no elements; otherwise,
         /// <see langword="false"/>
@@ -243,7 +246,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
         /// </summary>
         /// <param name="el">The element to check for.</param>
         /// <returns>
-        /// 
+        ///
         /// <see langword="true"/>
         /// if the set contains
         /// <paramref name="el"/>

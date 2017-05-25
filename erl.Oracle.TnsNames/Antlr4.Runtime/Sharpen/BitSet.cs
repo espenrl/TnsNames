@@ -1,6 +1,7 @@
-﻿// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+﻿/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen
 {
     using System;
@@ -70,7 +71,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen
                 bitCount += (uint)acc;
             }
 
-            // count the bits of the remaining bytes (MAX 29*8) using 
+            // count the bits of the remaining bytes (MAX 29*8) using
             // "Counting bits set, in parallel" from the "Bit Twiddling Hacks",
             // the code uses wikipedia's 64-bit popcount_3() implementation:
             // http://en.wikipedia.org/wiki/Hamming_weight#Efficient_implementation
@@ -125,6 +126,18 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen
 
             _data[element] &= ~(1UL << (index % BitsPerElement));
         }
+
+		public bool this[int index]
+		{
+			get
+			{
+				return Get(index);
+			}
+			set
+			{
+				Set(index);
+			}
+		}
 
         public bool Get(int index)
         {

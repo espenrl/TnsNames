@@ -1,332 +1,170 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
-using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
-using Interlocked = System.Threading.Interlocked;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Dfa
 {
-    public class DFA
-    {
-        /// <summary>A set of all DFA states.</summary>
-        /// <remarks>
-        /// A set of all DFA states. Use
-        /// <see cref="System.Collections.Generic.IDictionary{K, V}"/>
-        /// so we can get old state back
-        /// (
-        /// <see cref="HashSet{T}"/>
-        /// only allows you to see if it's there).
-        /// </remarks>
-        [NotNull]
-        public readonly ConcurrentDictionary<DFAState, DFAState> states = new ConcurrentDictionary<DFAState, DFAState>();
+	public class DFA
+	{
+		/** A set of all DFA states. Use {@link Map} so we can get old state back
+	 *  ({@link Set} only allows you to see if it's there).
+     */
 
-        [NotNull]
-        public readonly AtomicReference<DFAState> s0 = new AtomicReference<DFAState>();
+		public Dictionary<DFAState, DFAState> states = new Dictionary<DFAState, DFAState>();
 
-        [NotNull]
-        public readonly AtomicReference<DFAState> s0full = new AtomicReference<DFAState>();
+		public DFAState s0;
 
-        public readonly int decision;
+		public int decision;
 
-        /// <summary>From which ATN state did we create this DFA?</summary>
-        [NotNull]
-        public readonly ATNState atnStartState;
+		/** From which ATN state did we create this DFA? */
 
-        private int nextStateNumber;
+		public DecisionState atnStartState;
 
-        private readonly int minDfaEdge;
+		/**
+		 * {@code true} if this DFA is for a precedence decision; otherwise,
+		 * {@code false}. This is the backing field for {@link #isPrecedenceDfa}.
+		 */
+		private bool precedenceDfa;
 
-        private readonly int maxDfaEdge;
+		public DFA(DecisionState atnStartState)
+			: this(atnStartState, 0)
+		{
+		}
 
-        [NotNull]
-        private static readonly erl.Oracle.TnsNames.Antlr4.Runtime.Dfa.EmptyEdgeMap<DFAState> emptyPrecedenceEdges = new erl.Oracle.TnsNames.Antlr4.Runtime.Dfa.EmptyEdgeMap<DFAState>(0, 200);
+		public DFA(DecisionState atnStartState, int decision)
+		{
+			this.atnStartState = atnStartState;
+			this.decision = decision;
 
-        [NotNull]
-        private readonly erl.Oracle.TnsNames.Antlr4.Runtime.Dfa.EmptyEdgeMap<DFAState> emptyEdgeMap;
+			this.precedenceDfa = false;
+			if (atnStartState is StarLoopEntryState && ((StarLoopEntryState)atnStartState).isPrecedenceDecision)
+			{
+				this.precedenceDfa = true;
+				DFAState precedenceState = new DFAState(new ATNConfigSet());
+				precedenceState.edges = new DFAState[0];
+				precedenceState.isAcceptState = false;
+				precedenceState.requiresFullContext = false;
+				this.s0 = precedenceState;
+			}
+		}
 
-        [NotNull]
-        private readonly erl.Oracle.TnsNames.Antlr4.Runtime.Dfa.EmptyEdgeMap<DFAState> emptyContextEdgeMap;
+		/**
+		 * Gets whether this DFA is a precedence DFA. Precedence DFAs use a special
+		 * start state {@link #s0} which is not stored in {@link #states}. The
+		 * {@link DFAState#edges} array for this start state contains outgoing edges
+		 * supplying individual start states corresponding to specific precedence
+		 * values.
+		 *
+		 * @return {@code true} if this is a precedence DFA; otherwise,
+		 * {@code false}.
+		 * @see Parser#getPrecedence()
+		 */
+		public bool IsPrecedenceDfa
+		{
+			get
+			{
+				return precedenceDfa;
+			}
+		}
 
-        /// <summary>
-        /// <see langword="true"/>
-        /// if this DFA is for a precedence decision; otherwise,
-        /// <see langword="false"/>
-        /// . This is the backing field for <see cref="IsPrecedenceDfa"/>.
-        /// </summary>
-        private readonly bool precedenceDfa;
+		/**
+		 * Get the start state for a specific precedence value.
+		 *
+		 * @param precedence The current precedence.
+		 * @return The start state corresponding to the specified precedence, or
+		 * {@code null} if no start state exists for the specified precedence.
+		 *
+		 * @throws IllegalStateException if this is not a precedence DFA.
+		 * @see #isPrecedenceDfa()
+		 */
+		public DFAState GetPrecedenceStartState(int precedence)
+		{
+			if (!IsPrecedenceDfa)
+			{
+				throw new Exception("Only precedence DFAs may contain a precedence start state.");
+			}
 
-        public DFA(ATNState atnStartState)
-            : this(atnStartState, 0)
-        {
-        }
+			// s0.edges is never null for a precedence DFA
+			if (precedence < 0 || precedence >= s0.edges.Length)
+			{
+				return null;
+			}
 
-        public DFA(ATNState atnStartState, int decision)
-        {
-            this.atnStartState = atnStartState;
-            this.decision = decision;
-            if (this.atnStartState.atn.grammarType == ATNType.Lexer)
-            {
-                minDfaEdge = LexerATNSimulator.MinDfaEdge;
-                maxDfaEdge = LexerATNSimulator.MaxDfaEdge;
-            }
-            else
-            {
-                minDfaEdge = TokenConstants.Eof;
-                maxDfaEdge = atnStartState.atn.maxTokenType;
-            }
-            this.emptyEdgeMap = new erl.Oracle.TnsNames.Antlr4.Runtime.Dfa.EmptyEdgeMap<DFAState>(minDfaEdge, maxDfaEdge);
-            this.emptyContextEdgeMap = new erl.Oracle.TnsNames.Antlr4.Runtime.Dfa.EmptyEdgeMap<DFAState>(-1, atnStartState.atn.states.Count - 1);
-            bool isPrecedenceDfa = false;
-            if (atnStartState is StarLoopEntryState)
-            {
-                if (((StarLoopEntryState)atnStartState).precedenceRuleDecision)
-                {
-                    isPrecedenceDfa = true;
-                    this.s0.Set(new DFAState(emptyPrecedenceEdges, EmptyContextEdgeMap, new ATNConfigSet()));
-                    this.s0full.Set(new DFAState(emptyPrecedenceEdges, EmptyContextEdgeMap, new ATNConfigSet()));
-                }
-            }
-            this.precedenceDfa = isPrecedenceDfa;
-        }
+			return s0.edges[precedence];
+		}
 
-        public int MinDfaEdge
-        {
-            get
-            {
-                return minDfaEdge;
-            }
-        }
+		/**
+		 * Set the start state for a specific precedence value.
+		 *
+		 * @param precedence The current precedence.
+		 * @param startState The start state corresponding to the specified
+		 * precedence.
+		 *
+		 * @throws IllegalStateException if this is not a precedence DFA.
+		 * @see #isPrecedenceDfa()
+		 */
+		public void SetPrecedenceStartState(int precedence, DFAState startState)
+		{
+			if (!IsPrecedenceDfa)
+			{
+				throw new Exception("Only precedence DFAs may contain a precedence start state.");
+			}
 
-        public int MaxDfaEdge
-        {
-            get
-            {
-                return maxDfaEdge;
-            }
-        }
+			if (precedence < 0)
+			{
+				return;
+			}
 
-        public virtual erl.Oracle.TnsNames.Antlr4.Runtime.Dfa.EmptyEdgeMap<DFAState> EmptyEdgeMap
-        {
-            get
-            {
-                return emptyEdgeMap;
-            }
-        }
+			// synchronization on s0 here is ok. when the DFA is turned into a
+			// precedence DFA, s0 will be initialized once and not updated again
+			lock (s0)
+			{
+				// s0.edges is never null for a precedence DFA
+				if (precedence >= s0.edges.Length)
+				{
+					s0.edges = Arrays.CopyOf(s0.edges, precedence + 1);
+				}
 
-        public virtual erl.Oracle.TnsNames.Antlr4.Runtime.Dfa.EmptyEdgeMap<DFAState> EmptyContextEdgeMap
-        {
-            get
-            {
-                return emptyContextEdgeMap;
-            }
-        }
+				s0.edges[precedence] = startState;
+			}
+		}
 
-        /// <summary>Gets whether this DFA is a precedence DFA.</summary>
-        /// <remarks>
-        /// Gets whether this DFA is a precedence DFA. Precedence DFAs use a special
-        /// start state
-        /// <see cref="s0"/>
-        /// which is not stored in
-        /// <see cref="states"/>
-        /// . The
-        /// <see cref="DFAState.edges"/>
-        /// array for this start state contains outgoing edges
-        /// supplying individual start states corresponding to specific precedence
-        /// values.
-        /// </remarks>
-        /// <returns>
-        /// 
-        /// <see langword="true"/>
-        /// if this is a precedence DFA; otherwise,
-        /// <see langword="false"/>
-        /// .
-        /// </returns>
-        /// <seealso cref="erl.Oracle.TnsNames.Antlr4.Runtime.Parser.Precedence()"/>
-        /// <summary>Sets whether this is a precedence DFA.</summary>
-        /// <value>
-        /// 
-        /// <see langword="true"/>
-        /// if this is a precedence DFA; otherwise,
-        /// <see langword="false"/>
-        /// </value>
-        /// <exception cref="System.NotSupportedException">
-        /// if
-        /// <c>precedenceDfa</c>
-        /// does not
-        /// match the value of
-        /// <see cref="IsPrecedenceDfa()"/>
-        /// for the current DFA.
-        /// </exception>
-        public bool IsPrecedenceDfa
-        {
-            get
-            {
-                return precedenceDfa;
-            }
+		/**
+		 * Return a list of all states in this DFA, ordered by state number.
+		 */
 
-            set
-            {
-                bool precedenceDfa = value;
-                // s0.get() and s0full.get() are never null for a precedence DFA
-                // s0full.get() is never null for a precedence DFA
-                // s0.get() is never null for a precedence DFA
-                if (precedenceDfa != IsPrecedenceDfa)
-                {
-                    throw new NotSupportedException("The precedenceDfa field cannot change after a DFA is constructed.");
-                }
-            }
-        }
+		public List<DFAState> GetStates()
+		{
+			List<DFAState> result = new List<DFAState>(states.Keys);
+			result.Sort((x, y) => x.stateNumber - y.stateNumber);
+			return result;
+		}
 
-        /// <summary>Get the start state for a specific precedence value.</summary>
-        /// <param name="precedence">The current precedence.</param>
-        /// <returns>
-        /// The start state corresponding to the specified precedence, or
-        /// <see langword="null"/>
-        /// if no start state exists for the specified precedence.
-        /// </returns>
-        /// <exception cref="System.InvalidOperationException">if this is not a precedence DFA.</exception>
-        /// <seealso cref="IsPrecedenceDfa()"/>
-        public DFAState GetPrecedenceStartState(int precedence, bool fullContext)
-        {
-            if (!IsPrecedenceDfa)
-            {
-                throw new InvalidOperationException("Only precedence DFAs may contain a precedence start state.");
-            }
-            if (fullContext)
-            {
-                return s0full.Get().GetTarget(precedence);
-            }
-            else
-            {
-                return s0.Get().GetTarget(precedence);
-            }
-        }
+		public override String ToString() { return ToString(Vocabulary.EmptyVocabulary); }
 
-        /// <summary>Set the start state for a specific precedence value.</summary>
-        /// <param name="precedence">The current precedence.</param>
-        /// <param name="startState">
-        /// The start state corresponding to the specified
-        /// precedence.
-        /// </param>
-        /// <exception cref="System.InvalidOperationException">if this is not a precedence DFA.</exception>
-        /// <seealso cref="IsPrecedenceDfa()"/>
-        public void SetPrecedenceStartState(int precedence, bool fullContext, DFAState startState)
-        {
-            if (!IsPrecedenceDfa)
-            {
-                throw new InvalidOperationException("Only precedence DFAs may contain a precedence start state.");
-            }
-            if (precedence < 0)
-            {
-                return;
-            }
-            if (fullContext)
-            {
-                lock (s0full)
-                {
-                    s0full.Get().SetTarget(precedence, startState);
-                }
-            }
-            else
-            {
-                lock (s0)
-                {
-                    s0.Get().SetTarget(precedence, startState);
-                }
-            }
-        }
 
-        public virtual bool IsEmpty
-        {
-            get
-            {
-                if (IsPrecedenceDfa)
-                {
-                    return s0.Get().EdgeMap.Count == 0 && s0full.Get().EdgeMap.Count == 0;
-                }
-                return s0.Get() == null && s0full.Get() == null;
-            }
-        }
+		public String ToString(IVocabulary vocabulary)
+		{
+			if (s0 == null)
+			{
+				return "";
+			}
 
-        public virtual bool IsContextSensitive
-        {
-            get
-            {
-                if (IsPrecedenceDfa)
-                {
-                    return s0full.Get().EdgeMap.Count != 0;
-                }
-                return s0full.Get() != null;
-            }
-        }
+			DFASerializer serializer = new DFASerializer(this, vocabulary);
+			return serializer.ToString();
+		}
 
-        public virtual DFAState AddState(DFAState state)
-        {
-            state.stateNumber = Interlocked.Increment(ref nextStateNumber) - 1;
-            return states.GetOrAdd(state, state);
-        }
-
-        public override string ToString()
-        {
-            return ToString(Vocabulary.EmptyVocabulary);
-        }
-
-        [System.ObsoleteAttribute(@"Use ToString(erl.Oracle.TnsNames.Antlr4.Runtime.IVocabulary) instead.")]
-        public virtual string ToString(string[] tokenNames)
-        {
-            if (s0.Get() == null)
-            {
-                return string.Empty;
-            }
-            DFASerializer serializer = new DFASerializer(this, tokenNames);
-            return serializer.ToString();
-        }
-
-        public virtual string ToString(IVocabulary vocabulary)
-        {
-            if (s0.Get() == null)
-            {
-                return string.Empty;
-            }
-            DFASerializer serializer = new DFASerializer(this, vocabulary);
-            return serializer.ToString();
-        }
-
-        [System.ObsoleteAttribute(@"Use ToString(erl.Oracle.TnsNames.Antlr4.Runtime.IVocabulary, string[]) instead.")]
-        public virtual string ToString(string[] tokenNames, string[] ruleNames)
-        {
-            if (s0.Get() == null)
-            {
-                return string.Empty;
-            }
-            DFASerializer serializer = new DFASerializer(this, tokenNames, ruleNames, atnStartState.atn);
-            return serializer.ToString();
-        }
-
-        public virtual string ToString(IVocabulary vocabulary, string[] ruleNames)
-        {
-            if (s0.Get() == null)
-            {
-                return string.Empty;
-            }
-            DFASerializer serializer = new DFASerializer(this, vocabulary, ruleNames, atnStartState.atn);
-            return serializer.ToString();
-        }
-
-        public virtual string ToLexerString()
-        {
-            if (s0.Get() == null)
-            {
-                return string.Empty;
-            }
-            DFASerializer serializer = new LexerDFASerializer(this);
-            return serializer.ToString();
-        }
-    }
+		public String ToLexerString()
+		{
+			if (s0 == null)
+				return "";
+			DFASerializer serializer = new LexerDFASerializer(this);
+			return serializer.ToString();
+		}
+	}
 }

@@ -1,70 +1,15 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
 {
-    /// <summary>
-    /// The following images show the relation of states and
-    /// <see cref="transitions"/>
-    /// for various grammar constructs.
-    /// <ul>
-    /// <li>Solid edges marked with an &#0949; indicate a required
-    /// <see cref="EpsilonTransition"/>
-    /// .</li>
-    /// <li>Dashed edges indicate locations where any transition derived from
-    /// <see cref="Transition"/>
-    /// might appear.</li>
-    /// <li>Dashed nodes are place holders for either a sequence of linked
-    /// <see cref="BasicState"/>
-    /// states or the inclusion of a block representing a nested
-    /// construct in one of the forms below.</li>
-    /// <li>Nodes showing multiple outgoing alternatives with a
-    /// <c>...</c>
-    /// support
-    /// any number of alternatives (one or more). Nodes without the
-    /// <c>...</c>
-    /// only
-    /// support the exact number of alternatives shown in the diagram.</li>
-    /// </ul>
-    /// <h2>Basic Blocks</h2>
-    /// <h3>Rule</h3>
-    /// <embed src="images/Rule.svg" type="image/svg+xml"/>
-    /// <h3>Block of 1 or more alternatives</h3>
-    /// <embed src="images/Block.svg" type="image/svg+xml"/>
-    /// <h2>Greedy Loops</h2>
-    /// <h3>Greedy Closure:
-    /// <c>(...)*</c>
-    /// </h3>
-    /// <embed src="images/ClosureGreedy.svg" type="image/svg+xml"/>
-    /// <h3>Greedy Positive Closure:
-    /// <c>(...)+</c>
-    /// </h3>
-    /// <embed src="images/PositiveClosureGreedy.svg" type="image/svg+xml"/>
-    /// <h3>Greedy Optional:
-    /// <c>(...)?</c>
-    /// </h3>
-    /// <embed src="images/OptionalGreedy.svg" type="image/svg+xml"/>
-    /// <h2>Non-Greedy Loops</h2>
-    /// <h3>Non-Greedy Closure:
-    /// <c>(...)*?</c>
-    /// </h3>
-    /// <embed src="images/ClosureNonGreedy.svg" type="image/svg+xml"/>
-    /// <h3>Non-Greedy Positive Closure:
-    /// <c>(...)+?</c>
-    /// </h3>
-    /// <embed src="images/PositiveClosureNonGreedy.svg" type="image/svg+xml"/>
-    /// <h3>Non-Greedy Optional:
-    /// <c>(...)??</c>
-    /// </h3>
-    /// <embed src="images/OptionalNonGreedy.svg" type="image/svg+xml"/>
-    /// </summary>
     public abstract class ATNState
     {
         public const int InitialNumTransitions = 4;
@@ -73,7 +18,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
 
         public const int InvalidStateNumber = -1;
 
-        /// <summary>Which ATN are we in?</summary>
         public ATN atn = null;
 
         public int stateNumber = InvalidStateNumber;
@@ -82,41 +26,17 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
 
         public bool epsilonOnlyTransitions = false;
 
-        /// <summary>Track the transitions emanating from this ATN state.</summary>
-        protected internal readonly List<erl.Oracle.TnsNames.Antlr4.Runtime.Atn.Transition> transitions = new List<erl.Oracle.TnsNames.Antlr4.Runtime.Atn.Transition>(InitialNumTransitions);
+        protected internal readonly List<Transition> transitions = new List<Transition>(InitialNumTransitions);
 
-        protected internal List<erl.Oracle.TnsNames.Antlr4.Runtime.Atn.Transition> optimizedTransitions;
+        protected internal List<Transition> optimizedTransitions;
 
-        /// <summary>Used to cache lookahead during parsing, not used during construction</summary>
         public IntervalSet nextTokenWithinRule;
 
-        /// <summary>Gets the state number.</summary>
-        /// <returns>the state number</returns>
-        public int StateNumber
-        {
-            get
-            {
-                // at runtime, we don't have Rule objects
-                return stateNumber;
-            }
-        }
-
-        /// <summary>
-        /// For all states except
-        /// <see cref="RuleStopState"/>
-        /// , this returns the state
-        /// number. Returns -1 for stop states.
-        /// </summary>
-        /// <returns>
-        /// -1 for
-        /// <see cref="RuleStopState"/>
-        /// , otherwise the state number
-        /// </returns>
         public virtual int NonStopStateNumber
         {
             get
             {
-                return StateNumber;
+                return stateNumber;
             }
         }
 
@@ -127,12 +47,8 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
 
         public override bool Equals(object o)
         {
-            // are these states same object?
-            if (o is ATNState)
-            {
-                return stateNumber == ((ATNState)o).stateNumber;
-            }
-            return false;
+            return o==this ||
+				(o is ATNState && stateNumber == ((ATNState)o).stateNumber);
         }
 
         public virtual bool IsNonGreedyExitState
@@ -148,7 +64,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
             return stateNumber.ToString();
         }
 
-        public virtual Transition[] Transitions
+        public virtual Transition[] TransitionsArray
         {
             get
             {
@@ -179,9 +95,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
             {
                 if (epsilonOnlyTransitions != e.IsEpsilon)
                 {
-#if !PORTABLE
                     System.Console.Error.WriteLine("ATN state {0} has both epsilon and non-epsilon transitions.", stateNumber);
-#endif
                     epsilonOnlyTransitions = false;
                 }
             }

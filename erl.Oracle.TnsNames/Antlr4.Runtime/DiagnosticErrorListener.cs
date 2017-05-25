@@ -1,6 +1,8 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Dfa;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
@@ -58,7 +60,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// whether all ambiguities or only exact ambiguities are reported.
         /// </summary>
         /// <param name="exactOnly">
-        /// 
+        ///
         /// <see langword="true"/>
         /// to report only exact ambiguities, otherwise
         /// <see langword="false"/>
@@ -123,11 +125,16 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// configuration set, if that information was not already provided by the
         /// parser.
         /// </summary>
+        /// <remarks>
+        /// Computes the set of conflicting or ambiguous alternatives from a
+        /// configuration set, if that information was not already provided by the
+        /// parser.
+        /// </remarks>
         /// <param name="reportedAlts">
         /// The set of conflicting or ambiguous alternatives, as
         /// reported by the parser.
         /// </param>
-        /// <param name="configs">The conflicting or ambiguous configuration set.</param>
+        /// <param name="configSet">The conflicting or ambiguous configuration set.</param>
         /// <returns>
         /// Returns
         /// <paramref name="reportedAlts"/>
@@ -135,20 +142,20 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// <see langword="null"/>
         /// , otherwise
         /// returns the set of alternatives represented in
-        /// <paramref name="configs"/>
+        /// <paramref name="configSet"/>
         /// .
         /// </returns>
         [return: NotNull]
-        protected internal virtual BitSet GetConflictingAlts(BitSet reportedAlts, ATNConfigSet configs)
+		protected internal virtual BitSet GetConflictingAlts(BitSet reportedAlts, ATNConfigSet configSet)
         {
             if (reportedAlts != null)
             {
                 return reportedAlts;
             }
             BitSet result = new BitSet();
-            foreach (ATNConfig config in configs)
+			foreach (ATNConfig config in configSet.configs)
             {
-                result.Set(config.Alt);
+                result.Set(config.alt);
             }
             return result;
         }

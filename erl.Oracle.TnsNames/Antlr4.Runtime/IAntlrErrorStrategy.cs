@@ -1,8 +1,11 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
+using System.IO;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime
 {
@@ -45,10 +48,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// <see cref="IToken"/>
         /// instance which should be treated as the
         /// successful result of the match.
-        /// <p>This method handles the consumption of any tokens - the caller should
-        /// <em>not</em> call
-        /// <see cref="Parser.Consume()"/>
-        /// after a successful recovery.</p>
         /// <p>Note that the calling code will not report an error if this method
         /// returns successfully. The error strategy implementation is responsible
         /// for calling
@@ -125,7 +124,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// </summary>
         /// <param name="recognizer">the parser instance</param>
         /// <returns>
-        /// 
+        ///
         /// <see langword="true"/>
         /// if the parser is currently recovering from a parse
         /// error, otherwise
@@ -137,6 +136,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// This method is called by when the parser successfully matches an input
         /// symbol.
         /// </summary>
+        /// <remarks>
+        /// This method is called by when the parser successfully matches an input
+        /// symbol.
+        /// </remarks>
         /// <param name="recognizer">the parser instance</param>
         void ReportMatch(Parser recognizer);
 

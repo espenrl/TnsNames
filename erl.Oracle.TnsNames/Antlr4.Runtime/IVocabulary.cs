@@ -1,6 +1,8 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
@@ -10,21 +12,14 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
     /// This interface provides information about the vocabulary used by a
     /// recognizer.
     /// </summary>
+    /// <remarks>
+    /// This interface provides information about the vocabulary used by a
+    /// recognizer.
+    /// </remarks>
     /// <seealso cref="Recognizer{Symbol, ATNInterpreter}.Vocabulary()"/>
     /// <author>Sam Harwell</author>
     public interface IVocabulary
     {
-        /// <summary>Returns the highest token type value.</summary>
-        /// <remarks>
-        /// Returns the highest token type value. It can be used to iterate from
-        /// zero to that number, inclusively, thus querying all stored entries.
-        /// </remarks>
-        /// <returns>the highest token type value</returns>
-        int MaxTokenType
-        {
-            get;
-        }
-
         /// <summary>Gets the string literal associated with a token type.</summary>
         /// <remarks>
         /// Gets the string literal associated with a token type. The string returned
@@ -93,12 +88,15 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// methods:</p>
         /// <ul>
         /// <li>Tokens created by lexer rules.</li>
-        /// <li>Tokens defined in a <code>tokens{}</code> block in a lexer or parser
+        /// <li>Tokens defined in a
+        /// <c/>
+        /// tokens
+        /// block in a lexer or parser
         /// grammar.</li>
         /// <li>The implicitly defined
         /// <c>EOF</c>
         /// token, which has the token type
-        /// <see cref="TokenConstants.Eof"/>
+        /// <see cref="TokenConstants.EOF"/>
         /// .</li>
         /// </ul>
         /// <p>The following table shows examples of lexer rules and the literal

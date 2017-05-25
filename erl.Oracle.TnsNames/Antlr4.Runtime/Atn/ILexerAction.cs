@@ -1,7 +1,9 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using erl.Oracle.TnsNames.Antlr4.Runtime;
+using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
@@ -21,6 +23,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
     public interface ILexerAction
     {
         /// <summary>Gets the serialization type of the lexer action.</summary>
+        /// <remarks>Gets the serialization type of the lexer action.</remarks>
         /// <returns>The serialization type of the lexer action.</returns>
         [NotNull]
         LexerActionType ActionType
@@ -43,11 +46,11 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
         /// , do not check the input index during their execution.
         /// Actions like this are position-independent, and may be stored more
         /// efficiently as part of the
-        /// <see cref="ATNConfig.ActionExecutor()"/>
+        /// <see cref="LexerATNConfig.lexerActionExecutor"/>
         /// .</p>
         /// </remarks>
         /// <returns>
-        /// 
+        ///
         /// <see langword="true"/>
         /// if the lexer action semantics can be affected by the
         /// position of the input

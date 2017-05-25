@@ -1,8 +1,10 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
-using System.Collections;
+using System.IO;
+using System.Text;
 using System.Collections.Generic;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Dfa;
@@ -14,19 +16,25 @@ using erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern;
 namespace erl.Oracle.TnsNames.Antlr4.Runtime
 {
     /// <summary>This is all the parsing support code essentially; most of it is error recovery stuff.</summary>
+    /// <remarks>This is all the parsing support code essentially; most of it is error recovery stuff.</remarks>
     public abstract class Parser : Recognizer<IToken, ParserATNSimulator>
     {
-#if !PORTABLE
         public class TraceListener : IParseTreeListener
         {
+            private readonly TextWriter Output;
+
+            public TraceListener(TextWriter output) {
+                Output = output;
+            }
+
             public virtual void EnterEveryRule(ParserRuleContext ctx)
             {
-                System.Console.Out.WriteLine("enter   " + this._enclosing.RuleNames[ctx.RuleIndex] + ", LT(1)=" + this._enclosing._input.Lt(1).Text);
+                Output.WriteLine("enter   " + this._enclosing.RuleNames[ctx.RuleIndex] + ", LT(1)=" + this._enclosing._input.LT(1).Text);
             }
 
             public virtual void ExitEveryRule(ParserRuleContext ctx)
             {
-                System.Console.Out.WriteLine("exit    " + this._enclosing.RuleNames[ctx.RuleIndex] + ", LT(1)=" + this._enclosing._input.Lt(1).Text);
+                Output.WriteLine("exit    " + this._enclosing.RuleNames[ctx.RuleIndex] + ", LT(1)=" + this._enclosing._input.LT(1).Text);
             }
 
             public virtual void VisitErrorNode(IErrorNode node)
@@ -37,7 +45,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             {
                 ParserRuleContext parent = (ParserRuleContext)((IRuleNode)node.Parent).RuleContext;
                 IToken token = node.Symbol;
-                System.Console.Out.WriteLine("consume " + token + " rule " + this._enclosing.RuleNames[parent.RuleIndex]);
+                Output.WriteLine("consume " + token + " rule " + this._enclosing.RuleNames[parent.RuleIndex]);
             }
 
             internal TraceListener(Parser _enclosing)
@@ -47,7 +55,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
 
             private readonly Parser _enclosing;
         }
-#endif
 
         public class TrimToSizeListener : IParseTreeListener
         {
@@ -92,14 +99,14 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// </remarks>
         /// <seealso cref="ErrorHandler"/>
         [NotNull]
-        protected internal IAntlrErrorStrategy _errHandler = new DefaultErrorStrategy();
+		private IAntlrErrorStrategy _errHandler = new DefaultErrorStrategy();
 
         /// <summary>The input stream.</summary>
+        /// <remarks>The input stream.</remarks>
         /// <seealso cref="InputStream()"/>
-        /// <seealso cref="SetInputStream(ITokenStream)"/>
-        protected internal ITokenStream _input;
+    	private ITokenStream _input;
 
-        protected internal readonly List<int> _precedenceStack = new List<int> { 0 };
+		private readonly List<int> _precedenceStack = new List<int> { 0 };
 
         /// <summary>
         /// The
@@ -107,7 +114,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// object for the currently executing rule.
         /// This is always non-null during the parsing process.
         /// </summary>
-        protected internal ParserRuleContext _ctx;
+        private ParserRuleContext _ctx;
 
         /// <summary>
         /// Specifies whether or not the parser should construct a parse tree during
@@ -120,9 +127,8 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// .
         /// </remarks>
         /// <seealso cref="BuildParseTree"/>
-        protected internal bool _buildParseTrees = true;
+        private bool _buildParseTrees = true;
 
-#if !PORTABLE
         /// <summary>
         /// When
         /// <see cref="Trace"/>
@@ -138,7 +144,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// other parser methods.
         /// </summary>
         private Parser.TraceListener _tracer;
-#endif
 
         /// <summary>
         /// The list of
@@ -148,7 +153,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// </summary>
         /// <seealso cref="AddParseListener(erl.Oracle.TnsNames.Antlr4.Runtime.Tree.IParseTreeListener)"/>
         [Nullable]
-        protected internal IList<IParseTreeListener> _parseListeners;
+        private IList<IParseTreeListener> _parseListeners;
 
         /// <summary>The number of syntax errors reported during parsing.</summary>
         /// <remarks>
@@ -157,19 +162,18 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// <see cref="NotifyErrorListeners(string)"/>
         /// is called.
         /// </remarks>
-        protected internal int _syntaxErrors;
+        private int _syntaxErrors;
 
-        /// <summary>Indicates parser has match()ed EOF token.</summary>
-        /// <remarks>
-        /// Indicates parser has match()ed EOF token. See
-        /// <see cref="ExitRule()"/>
-        /// .
-        /// </remarks>
-        protected internal bool matchedEOF;
+        protected readonly TextWriter Output;
+        protected readonly TextWriter ErrorOutput;
 
-        public Parser(ITokenStream input)
+        public Parser(ITokenStream input) : this(input, Console.Out, Console.Error) { }
+
+        public Parser(ITokenStream input, TextWriter output, TextWriter errorOutput)
         {
-            SetInputStream(input);
+            TokenStream = input;
+            Output = output;
+            ErrorOutput = errorOutput;
         }
 
         /// <summary>reset the parser's state</summary>
@@ -182,10 +186,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             _errHandler.Reset(this);
             _ctx = null;
             _syntaxErrors = 0;
-            matchedEOF = false;
-#if !PORTABLE
             Trace = false;
-#endif
             _precedenceStack.Clear();
             _precedenceStack.Add(0);
             ATNSimulator interpreter = Interpreter;
@@ -234,10 +235,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             IToken t = CurrentToken;
             if (t.Type == ttype)
             {
-                if (ttype == TokenConstants.Eof)
-                {
-                    matchedEOF = true;
-                }
                 _errHandler.ReportMatch(this);
                 Consume();
             }
@@ -336,7 +333,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// for a newly constructed parser.
         /// </remarks>
         /// <returns>
-        /// 
+        ///
         /// <see langword="true"/>
         /// if a complete parse tree will be constructed while
         /// parsing, otherwise
@@ -350,8 +347,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             }
             set
             {
-                bool buildParseTrees = value;
-                this._buildParseTrees = buildParseTrees;
+				this._buildParseTrees = value;
             }
         }
 
@@ -363,14 +359,14 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// by default for a newly constructed parser.
         /// </remarks>
         /// <value>
-        /// 
+        ///
         /// <see langword="true"/>
         /// to trim the capacity of the
         /// <see cref="ParserRuleContext.children"/>
         /// list to its size after a rule is parsed.
         /// </value>
         /// <returns>
-        /// 
+        ///
         /// <see langword="true"/>
         /// if the
         /// <see cref="ParserRuleContext.children"/>
@@ -489,6 +485,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         }
 
         /// <summary>Remove all parse listeners.</summary>
+        /// <remarks>Remove all parse listeners.</remarks>
         /// <seealso cref="AddParseListener(erl.Oracle.TnsNames.Antlr4.Runtime.Tree.IParseTreeListener)"/>
         public virtual void RemoveParseListeners()
         {
@@ -496,6 +493,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         }
 
         /// <summary>Notify any parse listeners of an enter rule event.</summary>
+        /// <remarks>Notify any parse listeners of an enter rule event.</remarks>
         /// <seealso cref="AddParseListener(erl.Oracle.TnsNames.Antlr4.Runtime.Tree.IParseTreeListener)"/>
         protected internal virtual void TriggerEnterRuleEvent()
         {
@@ -507,16 +505,18 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         }
 
         /// <summary>Notify any parse listeners of an exit rule event.</summary>
+        /// <remarks>Notify any parse listeners of an exit rule event.</remarks>
         /// <seealso cref="AddParseListener(erl.Oracle.TnsNames.Antlr4.Runtime.Tree.IParseTreeListener)"/>
         protected internal virtual void TriggerExitRuleEvent()
         {
             // reverse order walk of listeners
-            for (int i = _parseListeners.Count - 1; i >= 0; i--)
-            {
-                IParseTreeListener listener = _parseListeners[i];
-                _ctx.ExitRule(listener);
-                listener.ExitEveryRule(_ctx);
-            }
+			if (_parseListeners != null) {
+				for (int i = _parseListeners.Count - 1; i >= 0; i--) {
+					IParseTreeListener listener = _parseListeners [i];
+					_ctx.ExitRule (listener);
+					listener.ExitEveryRule (_ctx);
+				}
+			}
         }
 
         /// <summary>Gets the number of syntax errors reported during parsing.</summary>
@@ -547,6 +547,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// The ATN with bypass alternatives is expensive to create so we create it
         /// lazily.
         /// </summary>
+        /// <remarks>
+        /// The ATN with bypass alternatives is expensive to create so we create it
+        /// lazily.
+        /// </remarks>
         /// <exception cref="System.NotSupportedException">
         /// if the current parser does not
         /// implement the
@@ -569,7 +573,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                     ATNDeserializationOptions deserializationOptions = new ATNDeserializationOptions();
                     deserializationOptions.GenerateRuleBypassTransitions = true;
                     result = new ATNDeserializer(deserializationOptions).Deserialize(serializedAtn.ToCharArray());
-                    bypassAltsAtnCache[serializedAtn] = result;
+                    bypassAltsAtnCache.Put(serializedAtn, result);
                 }
                 return result;
             }
@@ -627,30 +631,40 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         }
 
         public override IIntStream InputStream
-        {
-            get
-            {
-                return _input;
-            }
-        }
+		{
+			get
+			{
+				return _input;
+			}
+		}
 
-        /// <summary>Set the token stream and reset the parser.</summary>
-        public virtual void SetInputStream(ITokenStream input)
-        {
-            this._input = null;
-            Reset();
-            this._input = input;
-        }
+		public ITokenStream TokenStream
+		{
+			get
+			{
+				return _input;
+			}
+			set
+			{
+				this._input = null;
+				Reset ();
+				this._input = value;
+			}
+		}
 
         /// <summary>
         /// Match needs to return the current input symbol, which gets put
         /// into the label for the associated token ref; e.g., x=ID.
         /// </summary>
+        /// <remarks>
+        /// Match needs to return the current input symbol, which gets put
+        /// into the label for the associated token ref; e.g., x=ID.
+        /// </remarks>
         public virtual IToken CurrentToken
         {
             get
             {
-                return _input.Lt(1);
+                return _input.LT(1);
             }
         }
 
@@ -670,7 +684,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 charPositionInLine = offendingToken.Column;
             }
             IAntlrErrorListener<IToken> listener = ((IParserErrorListener)ErrorListenerDispatch);
-            listener.SyntaxError(this, offendingToken, line, charPositionInLine, msg, e);
+            listener.SyntaxError(ErrorOutput, this, offendingToken, line, charPositionInLine, msg, e);
         }
 
         /// <summary>
@@ -744,7 +758,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
 
         protected internal virtual void AddContextToParseTree()
         {
-            ParserRuleContext parent = (ParserRuleContext)_ctx.parent;
+            ParserRuleContext parent = (ParserRuleContext)_ctx.Parent;
             // add current context to parent if we have a parent
             if (parent != null)
             {
@@ -762,7 +776,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         {
             State = state;
             _ctx = localctx;
-            _ctx.start = _input.Lt(1);
+            _ctx.Start = _input.LT(1);
             if (_buildParseTrees)
             {
                 AddContextToParseTree();
@@ -780,11 +794,11 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             {
                 ParserRuleContext factoredContext = (ParserRuleContext)_ctx.GetChild(_ctx.ChildCount - 1);
                 _ctx.RemoveLastChild();
-                factoredContext.parent = localctx;
+                factoredContext.Parent = localctx;
                 localctx.AddChild(factoredContext);
             }
             _ctx = localctx;
-            _ctx.start = _input.Lt(1);
+            _ctx.Start = _input.LT(1);
             if (_buildParseTrees)
             {
                 AddContextToParseTree();
@@ -797,34 +811,24 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
 
         public virtual void ExitRule()
         {
-            if (matchedEOF)
-            {
-                // if we have matched EOF, it cannot consume past EOF so we use LT(1) here
-                _ctx.stop = _input.Lt(1);
-            }
-            else
-            {
-                // LT(1) will be end of file
-                _ctx.stop = _input.Lt(-1);
-            }
-            // stop node is what we just matched
+            _ctx.Stop = _input.LT(-1);
             // trigger event on _ctx, before it reverts to parent
             if (_parseListeners != null)
             {
                 TriggerExitRuleEvent();
             }
             State = _ctx.invokingState;
-            _ctx = (ParserRuleContext)_ctx.parent;
+            _ctx = (ParserRuleContext)_ctx.Parent;
         }
 
         public virtual void EnterOuterAlt(ParserRuleContext localctx, int altNum)
         {
-            localctx.OuterAlternative = altNum;
+        	localctx.setAltNumber(altNum);
             // if we have new localctx, make sure we replace existing ctx
             // that is previous child of parse tree
             if (_buildParseTrees && _ctx != localctx)
             {
-                ParserRuleContext parent = (ParserRuleContext)_ctx.parent;
+                ParserRuleContext parent = (ParserRuleContext)_ctx.Parent;
                 if (parent != null)
                 {
                     parent.RemoveLastChild();
@@ -835,6 +839,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         }
 
         /// <summary>Get the precedence level for the top-most precedence rule.</summary>
+        /// <remarks>Get the precedence level for the top-most precedence rule.</remarks>
         /// <returns>
         /// The precedence level for the top-most precedence rule, or -1 if
         /// the parser context is not nested within a precedence rule.
@@ -862,7 +867,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             State = state;
             _precedenceStack.Add(precedence);
             _ctx = localctx;
-            _ctx.start = _input.Lt(1);
+            _ctx.Start = _input.LT(1);
             if (_parseListeners != null)
             {
                 TriggerEnterRuleEvent();
@@ -874,16 +879,15 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// Like
         /// <see cref="EnterRule(ParserRuleContext, int, int)"/>
         /// but for recursive rules.
-        /// Make the current context the child of the incoming localctx.
         /// </summary>
         public virtual void PushNewRecursionContext(ParserRuleContext localctx, int state, int ruleIndex)
         {
             ParserRuleContext previous = _ctx;
-            previous.parent = localctx;
+            previous.Parent = localctx;
             previous.invokingState = state;
-            previous.stop = _input.Lt(-1);
+            previous.Stop = _input.LT(-1);
             _ctx = localctx;
-            _ctx.start = previous.start;
+            _ctx.Start = previous.Start;
             if (_buildParseTrees)
             {
                 _ctx.AddChild(previous);
@@ -898,7 +902,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         public virtual void UnrollRecursionContexts(ParserRuleContext _parentctx)
         {
             _precedenceStack.RemoveAt(_precedenceStack.Count - 1);
-            _ctx.stop = _input.Lt(-1);
+            _ctx.Stop = _input.LT(-1);
             ParserRuleContext retctx = _ctx;
             // save current ctx (return value)
             // unroll so _ctx is as it was before call to recursive method
@@ -907,7 +911,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 while (_ctx != _parentctx)
                 {
                     TriggerExitRuleEvent();
-                    _ctx = (ParserRuleContext)_ctx.parent;
+                    _ctx = (ParserRuleContext)_ctx.Parent;
                 }
             }
             else
@@ -915,7 +919,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 _ctx = _parentctx;
             }
             // hook into tree
-            retctx.parent = _parentctx;
+            retctx.Parent = _parentctx;
             if (_buildParseTrees && _parentctx != null)
             {
                 // add return ctx into invoking rule's tree
@@ -932,7 +936,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 {
                     return p;
                 }
-                p = (ParserRuleContext)p.parent;
+                p = (ParserRuleContext)p.Parent;
             }
             return null;
         }
@@ -955,7 +959,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             return precedence >= _precedenceStack[_precedenceStack.Count - 1];
         }
 
-        public override IAntlrErrorListener<IToken> ErrorListenerDispatch
+        public new IParserErrorListener ErrorListenerDispatch
         {
             get
             {
@@ -982,7 +986,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// </summary>
         /// <param name="symbol">the symbol type to check</param>
         /// <returns>
-        /// 
+        ///
         /// <see langword="true"/>
         /// if
         /// <paramref name="symbol"/>
@@ -1003,11 +1007,11 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 return true;
             }
             //        System.out.println("following "+s+"="+following);
-            if (!following.Contains(TokenConstants.Epsilon))
+            if (!following.Contains(TokenConstants.EPSILON))
             {
                 return false;
             }
-            while (ctx != null && ctx.invokingState >= 0 && following.Contains(TokenConstants.Epsilon))
+            while (ctx != null && ctx.invokingState >= 0 && following.Contains(TokenConstants.EPSILON))
             {
                 ATNState invokingState = atn.states[ctx.invokingState];
                 RuleTransition rt = (RuleTransition)invokingState.Transition(0);
@@ -1016,21 +1020,13 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 {
                     return true;
                 }
-                ctx = (ParserRuleContext)ctx.parent;
+                ctx = (ParserRuleContext)ctx.Parent;
             }
-            if (following.Contains(TokenConstants.Epsilon) && symbol == TokenConstants.Eof)
+            if (following.Contains(TokenConstants.EPSILON) && symbol == TokenConstants.EOF)
             {
                 return true;
             }
             return false;
-        }
-
-        public virtual bool MatchedEndOfFile
-        {
-            get
-            {
-                return matchedEOF;
-            }
         }
 
         /// <summary>
@@ -1096,6 +1092,18 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             return GetRuleInvocationStack(_ctx);
         }
 
+		public virtual string GetRuleInvocationStackAsString()
+		{
+			StringBuilder sb = new StringBuilder ("[");
+			foreach (string s in GetRuleInvocationStack()) {
+				sb.Append (s);
+				sb.Append (", ");
+			}
+			sb.Length = sb.Length - 2;
+			sb.Append ("]");
+			return sb.ToString ();
+		}
+
         public virtual IList<string> GetRuleInvocationStack(RuleContext p)
         {
             string[] ruleNames = RuleNames;
@@ -1112,44 +1120,44 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 {
                     stack.Add(ruleNames[ruleIndex]);
                 }
-                p = p.parent;
+                p = p.Parent;
             }
             return stack;
         }
 
         /// <summary>For debugging and other purposes.</summary>
+        /// <remarks>For debugging and other purposes.</remarks>
         public virtual IList<string> GetDFAStrings()
         {
             IList<string> s = new List<string>();
-            for (int d = 0; d < _interp.atn.decisionToDFA.Length; d++)
+            for (int d = 0; d < Interpreter.atn.decisionToDFA.Length; d++)
             {
-                DFA dfa = _interp.atn.decisionToDFA[d];
-                s.Add(dfa.ToString(Vocabulary, RuleNames));
+				DFA dfa = Interpreter.atn.decisionToDFA[d];
+                s.Add(dfa.ToString(Vocabulary));
             }
             return s;
         }
 
-#if !PORTABLE
         /// <summary>For debugging and other purposes.</summary>
+        /// <remarks>For debugging and other purposes.</remarks>
         public virtual void DumpDFA()
         {
             bool seenOne = false;
-            for (int d = 0; d < _interp.atn.decisionToDFA.Length; d++)
+			for (int d = 0; d < Interpreter.decisionToDFA.Length; d++)
             {
-                DFA dfa = _interp.atn.decisionToDFA[d];
-                if (!dfa.IsEmpty)
+				DFA dfa = Interpreter.decisionToDFA[d];
+				if (dfa.states.Count>0)
                 {
                     if (seenOne)
                     {
-                        System.Console.Out.WriteLine();
+                        Output.WriteLine();
                     }
-                    System.Console.Out.WriteLine("Decision " + dfa.decision + ":");
-                    System.Console.Out.Write(dfa.ToString(Vocabulary, RuleNames));
+                    Output.WriteLine("Decision " + dfa.decision + ":");
+                    Output.Write(dfa.ToString(Vocabulary));
                     seenOne = true;
                 }
             }
         }
-#endif
 
         public virtual string SourceName
         {
@@ -1190,14 +1198,12 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 {
                     if (interp is ProfilingATNSimulator)
                     {
-                        Interpreter = new ParserATNSimulator(this, Atn);
+                        Interpreter = new ParserATNSimulator(this, Atn, null, null);
                     }
                 }
-                Interpreter.PredictionMode = interp.PredictionMode;
             }
         }
 
-#if !PORTABLE
         /// <summary>
         /// During a parse is sometimes useful to listen in on the rule entry and exit
         /// events as well as token matches.
@@ -1241,6 +1247,5 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 }
             }
         }
-#endif
     }
 }

@@ -1,7 +1,9 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using erl.Oracle.TnsNames.Antlr4.Runtime;
+using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
@@ -10,11 +12,13 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
     /// This class represents profiling event information for tracking the lookahead
     /// depth required in order to make a prediction.
     /// </summary>
+    /// <remarks>
+    /// This class represents profiling event information for tracking the lookahead
+    /// depth required in order to make a prediction.
+    /// </remarks>
     /// <since>4.3</since>
     public class LookaheadEventInfo : DecisionEventInfo
     {
-        private readonly int predictedAlt;
-
         /// <summary>
         /// Constructs a new instance of the
         /// <see cref="LookaheadEventInfo"/>
@@ -29,13 +33,11 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
         /// if
         /// the final state is not available
         /// </param>
-        /// <param name="predictedAlt">The alternative chosen by
-        /// <see cref="ParserATNSimulator.AdaptivePredict(ITokenStream, int, ParserRuleContext)"/>.</param>
         /// <param name="input">The input token stream</param>
         /// <param name="startIndex">The start index for the current prediction</param>
         /// <param name="stopIndex">The index at which the prediction was finally made</param>
         /// <param name="fullCtx">
-        /// 
+        ///
         /// <see langword="true"/>
         /// if the current lookahead is part of an LL
         /// prediction; otherwise,
@@ -43,24 +45,9 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
         /// if the current lookahead is part of
         /// an SLL prediction
         /// </param>
-        public LookaheadEventInfo(int decision, SimulatorState state, int predictedAlt, ITokenStream input, int startIndex, int stopIndex, bool fullCtx)
+        public LookaheadEventInfo(int decision, SimulatorState state, ITokenStream input, int startIndex, int stopIndex, bool fullCtx)
             : base(decision, state, input, startIndex, stopIndex, fullCtx)
         {
-            this.predictedAlt = predictedAlt;
-        }
-
-        /// <summary>
-        /// The alternative chosen by adaptivePredict(), not necessarily
-        /// the outermost alt shown for a rule; left-recursive rules have
-        /// user-level alts that differ from the rewritten rule with a (...) block
-        /// and a (..)* loop.
-        /// </summary>
-        public int PredictedAlternative
-        {
-            get
-            {
-                return predictedAlt;
-            }
         }
     }
 }

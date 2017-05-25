@@ -1,8 +1,9 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using erl.Oracle.TnsNames.Antlr4.Runtime;
-using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
+using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
@@ -19,7 +20,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
     /// determine that the SLL conflict is truly an ambiguity. For example, if none
     /// of the ATN configurations in the conflicting SLL configuration set have
     /// traversed a global follow transition (i.e.
-    /// <see cref="ATNConfig.ReachesIntoOuterContext()"/>
+    /// <see cref="ATNConfig.reachesIntoOuterContext"/>
     /// is
     /// <see langword="false"/>
     /// for all
@@ -30,7 +31,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
     /// configuration set is not equal to the minimum represented alternative in the
     /// conflicting SLL configuration set. Grammars and inputs which result in this
     /// scenario are unable to use
-    /// <see cref="PredictionMode.Sll"/>
+    /// <see cref="PredictionMode.SLL"/>
     /// , which in turn means
     /// they cannot use the two-stage parsing strategy to improve parsing performance
     /// for that input.</p>
@@ -40,10 +41,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
     /// <since>4.3</since>
     public class AmbiguityInfo : DecisionEventInfo
     {
-        /// <summary>The set of alternative numbers for this decision event that lead to a valid parse.</summary>
-        [NotNull]
-        private readonly BitSet ambigAlts;
-
         /// <summary>
         /// Constructs a new instance of the
         /// <see cref="AmbiguityInfo"/>
@@ -55,30 +52,15 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
         /// The final simulator state identifying the ambiguous
         /// alternatives for the current input
         /// </param>
-        /// <param name="ambigAlts">
-        /// The set of alternatives in the decision that lead to a valid parse.
-        /// The predicted alt is the min(ambigAlts)
-        /// </param>
         /// <param name="input">The input token stream</param>
         /// <param name="startIndex">The start index for the current prediction</param>
         /// <param name="stopIndex">
         /// The index at which the ambiguity was identified during
         /// prediction
         /// </param>
-        public AmbiguityInfo(int decision, SimulatorState state, BitSet ambigAlts, ITokenStream input, int startIndex, int stopIndex)
+        public AmbiguityInfo(int decision, SimulatorState state, ITokenStream input, int startIndex, int stopIndex)
             : base(decision, state, input, startIndex, stopIndex, state.useContext)
         {
-            this.ambigAlts = ambigAlts;
-        }
-
-        /// <summary>Gets the set of alternatives in the decision that lead to a valid parse.</summary>
-        /// <since>4.5</since>
-        public virtual BitSet AmbiguousAlternatives
-        {
-            get
-            {
-                return ambigAlts;
-            }
         }
     }
 }

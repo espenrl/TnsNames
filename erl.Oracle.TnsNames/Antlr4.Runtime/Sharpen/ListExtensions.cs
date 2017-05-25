@@ -1,11 +1,13 @@
-﻿// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+﻿/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen
 {
-    using System.Collections.Generic;
+	using System.Collections.Generic;
+	using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 
-    internal static class ListExtensions
+	internal static class ListExtensions
     {
         public static T Set<T>(this IList<T> list, int index, T value)
             where T : class
@@ -14,5 +16,8 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen
             list[index] = value;
             return previous;
         }
-    }
+
+
+
+	}
 }

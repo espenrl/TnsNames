@@ -1,6 +1,8 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
+using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
@@ -25,8 +27,8 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
         /// the rule index of a precedence rule for which this transition is
         /// returning from, where the precedence value is 0; otherwise, -1.
         /// </returns>
-        /// <seealso cref="ATNConfig.PrecedenceFilterSuppressed()"/>
-        /// <seealso cref="ParserATNSimulator.ApplyPrecedenceFilter(ATNConfigSet, ParserRuleContext, PredictionContextCache)"></seealso>
+        /// <seealso cref="ATNConfig.IsPrecedenceFilterSuppressed"/>
+        /// <seealso cref="ParserATNSimulator.ApplyPrecedenceFilter(ATNConfigSet)"/>
         /// <since>4.4.1</since>
         public int OutermostPrecedenceReturn
         {
@@ -40,7 +42,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
         {
             get
             {
-                return erl.Oracle.TnsNames.Antlr4.Runtime.Atn.TransitionType.Epsilon;
+                return erl.Oracle.TnsNames.Antlr4.Runtime.Atn.TransitionType.EPSILON;
             }
         }
 

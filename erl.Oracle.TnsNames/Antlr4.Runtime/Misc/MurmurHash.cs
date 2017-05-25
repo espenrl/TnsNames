@@ -1,7 +1,7 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
-using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
 {
@@ -11,6 +11,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
         private const int DefaultSeed = 0;
 
         /// <summary>Initialize the hash using the default seed value.</summary>
+        /// <remarks>Initialize the hash using the default seed value.</remarks>
         /// <returns>the intermediate hash value</returns>
         public static int Initialize()
         {
@@ -91,6 +92,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
         /// Utility function to compute the hash code of an array using the
         /// MurmurHash algorithm.
         /// </summary>
+        /// <remarks>
+        /// Utility function to compute the hash code of an array using the
+        /// MurmurHash algorithm.
+        /// </remarks>
         /// <param name="data">the array data</param>
         /// <param name="seed">the seed for the MurmurHash algorithm</param>
         /// <returns>the hash code of the data</returns>

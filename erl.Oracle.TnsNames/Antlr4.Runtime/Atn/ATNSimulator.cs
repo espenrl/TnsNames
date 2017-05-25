@@ -1,128 +1,103 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
+using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Dfa;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
 {
-    public abstract class ATNSimulator
-    {
-        [Obsolete(@"Use ATNDeserializer.SerializedVersion instead.")]
-        public static readonly int SerializedVersion = ATNDeserializer.SerializedVersion;
+	public abstract class ATNSimulator
+	{
 
-        /// <summary>This is the current serialized UUID.</summary>
-        [Obsolete(@"Use ATNDeserializer.CheckCondition(bool) instead.")]
-        public static readonly Guid SerializedUuid = ATNDeserializer.SerializedUuid;
 
-        public const char RuleVariantDelimiter = '$';
+		/** Must distinguish between missing edge and edge we know leads nowhere */
 
-        public const string RuleLfVariantMarker = "$lf$";
+		public static readonly DFAState ERROR = InitERROR();
 
-        public const string RuleNolfVariantMarker = "$nolf$";
+		static DFAState InitERROR()
+		{
+			DFAState state = new DFAState(new ATNConfigSet());
+			state.stateNumber = Int32.MaxValue;
+			return state;
+		}
 
-        /// <summary>Must distinguish between missing edge and edge we know leads nowhere</summary>
-        [NotNull]
-        public static readonly DFAState Error =
-            new DFAState(new EmptyEdgeMap<DFAState>(0, -1), new EmptyEdgeMap<DFAState>(0, -1), new ATNConfigSet())
-            {
-                stateNumber = int.MaxValue
-            };
+		public readonly ATN atn;
 
-        [NotNull]
-        public readonly ATN atn;
+		/** The context cache maps all PredictionContext objects that are equals()
+		 *  to a single cached copy. This cache is shared across all contexts
+		 *  in all ATNConfigs in all DFA states.  We rebuild each ATNConfigSet
+		 *  to use only cached nodes/graphs in addDFAState(). We don't want to
+		 *  fill this during closure() since there are lots of contexts that
+		 *  pop up but are not used ever again. It also greatly slows down closure().
+		 *
+		 *  <p>This cache makes a huge difference in memory and a little bit in speed.
+		 *  For the Java grammar on java.*, it dropped the memory requirements
+		 *  at the end from 25M to 16M. We don't store any of the full context
+		 *  graphs in the DFA because they are limited to local context only,
+		 *  but apparently there's a lot of repetition there as well. We optimize
+		 *  the config contexts before storing the config set in the DFA states
+		 *  by literally rebuilding them with cached subgraphs only.</p>
+		 *
+		 *  <p>I tried a cache for use during closure operations, that was
+		 *  whacked after each adaptivePredict(). It cost a little bit
+		 *  more time I think and doesn't save on the overall footprint
+		 *  so it's not worth the complexity.</p>
+		 */
+		protected readonly PredictionContextCache sharedContextCache;
 
-        public ATNSimulator(ATN atn)
+
+		public ATNSimulator(ATN atn, PredictionContextCache sharedContextCache)
+		{
+			this.atn = atn;
+			this.sharedContextCache = sharedContextCache;
+		}
+
+		public abstract void Reset();
+
+		/**
+		 * Clear the DFA cache used by the current instance. Since the DFA cache may
+		 * be shared by multiple ATN simulators, this method may affect the
+		 * performance (but not accuracy) of other parsers which are being used
+		 * concurrently.
+		 *
+		 * @throws UnsupportedOperationException if the current instance does not
+		 * support clearing the DFA.
+		 *
+		 * @since 4.3
+		 */
+		public virtual void ClearDFA()
+		{
+			throw new Exception("This ATN simulator does not support clearing the DFA.");
+		}
+
+        protected void ConsoleWriteLine(string format, params object[] arg)
         {
-            this.atn = atn;
+            System.Console.WriteLine(format, arg);
         }
 
-        public abstract void Reset();
+        public PredictionContextCache getSharedContextCache()
+		{
+			return sharedContextCache;
+		}
 
-        /// <summary>Clear the DFA cache used by the current instance.</summary>
-        /// <remarks>
-        /// Clear the DFA cache used by the current instance. Since the DFA cache may
-        /// be shared by multiple ATN simulators, this method may affect the
-        /// performance (but not accuracy) of other parsers which are being used
-        /// concurrently.
-        /// </remarks>
-        /// <exception cref="System.NotSupportedException">
-        /// if the current instance does not
-        /// support clearing the DFA.
-        /// </exception>
-        /// <since>4.3</since>
-        public virtual void ClearDFA()
-        {
-            atn.ClearDFA();
-        }
+		public PredictionContext getCachedContext(PredictionContext context)
+		{
+			if (sharedContextCache == null) return context;
 
-        [Obsolete(@"Use ATNDeserializer.Deserialize(char[]) instead.")]
-        public static ATN Deserialize(char[] data)
-        {
-            return new ATNDeserializer().Deserialize(data);
-        }
+			lock (sharedContextCache)
+			{
+				PredictionContext.IdentityHashMap visited =
+					new PredictionContext.IdentityHashMap();
+				return PredictionContext.GetCachedContext(context,
+														  sharedContextCache,
+														  visited);
+			}
+		}
 
-        [Obsolete(@"Use ATNDeserializer.CheckCondition(bool) instead.")]
-        public static void CheckCondition(bool condition)
-        {
-            new ATNDeserializer().CheckCondition(condition);
-        }
-
-        [Obsolete(@"Use ATNDeserializer.CheckCondition(bool, string) instead.")]
-        public static void CheckCondition(bool condition, string message)
-        {
-            new ATNDeserializer().CheckCondition(condition, message);
-        }
-
-        [Obsolete(@"Use ATNDeserializer.ToInt(char) instead.")]
-        public static int ToInt(char c)
-        {
-            return ATNDeserializer.ToInt(c);
-        }
-
-        [Obsolete(@"Use ATNDeserializer.ToInt32(char[], int) instead.")]
-        public static int ToInt32(char[] data, int offset)
-        {
-            return ATNDeserializer.ToInt32(data, offset);
-        }
-
-        [Obsolete(@"Use ATNDeserializer.ToLong(char[], int) instead.")]
-        public static long ToLong(char[] data, int offset)
-        {
-            return ATNDeserializer.ToLong(data, offset);
-        }
-
-        [Obsolete(@"Use ATNDeserializer.ToUUID(char[], int) instead.")]
-        public static Guid ToUUID(char[] data, int offset)
-        {
-            return ATNDeserializer.ToUUID(data, offset);
-        }
-
-        [return: NotNull]
-        [Obsolete(@"Use ATNDeserializer.EdgeFactory(ATN, TransitionType, int, int, int, int, int, System.Collections.Generic.IList{E}) instead.")]
-        public static Transition EdgeFactory(ATN atn, TransitionType type, int src, int trg, int arg1, int arg2, int arg3, IList<IntervalSet> sets)
-        {
-            return new ATNDeserializer().EdgeFactory(atn, type, src, trg, arg1, arg2, arg3, sets);
-        }
-
-        [Obsolete(@"Use ATNDeserializer.StateFactory(StateType, int) instead.")]
-        public static ATNState StateFactory(StateType type, int ruleIndex)
-        {
-            return new ATNDeserializer().StateFactory(type, ruleIndex);
-        }
-        /*
-        public static void dump(DFA dfa, Grammar g) {
-        DOTGenerator dot = new DOTGenerator(g);
-        String output = dot.getDOT(dfa, false);
-        System.out.println(output);
-        }
-        
-        public static void dump(DFA dfa) {
-        dump(dfa, null);
-        }
-        */
-    }
+	}
 }

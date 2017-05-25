@@ -1,11 +1,13 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Tree;
+using erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
 {
@@ -223,6 +225,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
         }
 
         /// <summary>Get the node at which we first detected a mismatch.</summary>
+        /// <remarks>Get the node at which we first detected a mismatch.</remarks>
         /// <returns>
         /// the node at which we first detected a mismatch, or
         /// <see langword="null"/>
@@ -238,8 +241,9 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
         }
 
         /// <summary>Gets a value indicating whether the match operation succeeded.</summary>
+        /// <remarks>Gets a value indicating whether the match operation succeeded.</remarks>
         /// <returns>
-        /// 
+        ///
         /// <see langword="true"/>
         /// if the match operation succeeded; otherwise,
         /// <see langword="false"/>
@@ -254,6 +258,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
         }
 
         /// <summary>Get the tree pattern we are matching against.</summary>
+        /// <remarks>Get the tree pattern we are matching against.</remarks>
         /// <returns>The tree pattern we are matching against.</returns>
         [NotNull]
         public virtual ParseTreePattern Pattern
@@ -265,6 +270,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
         }
 
         /// <summary>Get the parse tree we are trying to match to a pattern.</summary>
+        /// <remarks>Get the parse tree we are trying to match to a pattern.</remarks>
         /// <returns>
         /// The
         /// <see cref="erl.Oracle.TnsNames.Antlr4.Runtime.Tree.IParseTree"/>

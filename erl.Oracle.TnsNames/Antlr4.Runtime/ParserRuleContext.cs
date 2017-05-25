@@ -1,9 +1,10 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Tree;
@@ -15,8 +16,9 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
     /// A rule invocation record for parsing.
     /// Contains all of the information about the current rule not stored in the
     /// RuleContext. It handles parse tree children list, Any ATN state
-    /// tracing, and the default values available for rule invocations:
-    /// start, stop, rule index, current alt number.
+    /// tracing, and the default values available for rule indications:
+    /// start, stop, rule index, current alt number, current
+    /// ATN state.
     /// Subclasses made for each rule and grammar track the parameters,
     /// return values, locals, and labels specific to that rule. These
     /// are the objects that are returned from rules.
@@ -32,7 +34,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
     /// </remarks>
     public class ParserRuleContext : RuleContext
     {
-        private static readonly erl.Oracle.TnsNames.Antlr4.Runtime.ParserRuleContext Empty = new erl.Oracle.TnsNames.Antlr4.Runtime.ParserRuleContext();
+		public static readonly Antlr4.Runtime.ParserRuleContext EMPTY = new Antlr4.Runtime.ParserRuleContext();
 
         /// <summary>
         /// If we are debugging or building a parse tree for a visitor,
@@ -68,7 +70,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// if we are debugging/tracing.
         /// This does not trace states visited during prediction.
         /// </remarks>
-        public IToken start;
+        private IToken _start;
 
         /// <summary>
         /// For debugging/tracing purposes, we want to track all of the nodes in
@@ -90,7 +92,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// if we are debugging/tracing.
         /// This does not trace states visited during prediction.
         /// </remarks>
-        public IToken stop;
+        private IToken _stop;
 
         /// <summary>The exception that forced this rule to return.</summary>
         /// <remarks>
@@ -105,32 +107,53 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         {
         }
 
-        public static erl.Oracle.TnsNames.Antlr4.Runtime.ParserRuleContext EmptyContext
+        public static Antlr4.Runtime.ParserRuleContext EmptyContext
         {
             get
             {
                 //	public List<Integer> states;
-                return Empty;
+                return EMPTY;
             }
         }
 
         /// <summary>
         /// COPY a ctx (I'm deliberately not using copy constructor) to avoid
-        /// confusion with creating node with parent.
-        /// </summary>
-        /// <remarks>
-        /// COPY a ctx (I'm deliberately not using copy constructor) to avoid
         /// confusion with creating node with parent. Does not copy children.
-        /// </remarks>
-        public virtual void CopyFrom(erl.Oracle.TnsNames.Antlr4.Runtime.ParserRuleContext ctx)
+        ///
+        /// This is used in the generated parser code to flip a generic XContext
+        /// node for rule X to a YContext for alt label Y. In that sense, it is
+        /// not really a generic copy function.
+        ///
+        /// If we do an error sync() at start of a rule, we might add error nodes
+        /// to the generic XContext so this function must copy those nodes to
+        /// the YContext as well else they are lost!
+        /// </summary>
+        public virtual void CopyFrom(Antlr4.Runtime.ParserRuleContext ctx)
         {
-            this.parent = ctx.parent;
+            // from RuleContext
+            this.Parent = ctx.Parent;
             this.invokingState = ctx.invokingState;
-            this.start = ctx.start;
-            this.stop = ctx.stop;
+            this._start = ctx._start;
+            this._stop = ctx._stop;
+
+            // copy any error nodes to alt label node
+            if (ctx.children != null)
+            {
+                children = new List<IParseTree>();
+                // reset parent pointer for any error nodes
+                foreach (var child in ctx.children)
+                {
+                    var errorChildNode = child as ErrorNodeImpl;
+                    if (errorChildNode != null)
+                    {
+                        children.Add(errorChildNode);
+                        errorChildNode.Parent = this;
+                    }
+                }
+            }
         }
 
-        public ParserRuleContext(erl.Oracle.TnsNames.Antlr4.Runtime.ParserRuleContext parent, int invokingStateNumber)
+        public ParserRuleContext(Antlr4.Runtime.ParserRuleContext parent, int invokingStateNumber)
             : base(parent, invokingStateNumber)
         {
         }
@@ -188,7 +211,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         {
             TerminalNodeImpl t = new TerminalNodeImpl(matchedToken);
             AddChild(t);
-            t.parent = this;
+            t.Parent = this;
             return t;
         }
 
@@ -196,17 +219,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         {
             ErrorNodeImpl t = new ErrorNodeImpl(badToken);
             AddChild(t);
-            t.parent = this;
+            t.Parent = this;
             return t;
         }
 
-        public override RuleContext Parent
-        {
-            get
-            {
-                return (erl.Oracle.TnsNames.Antlr4.Runtime.ParserRuleContext)base.Parent;
-            }
-        }
 
         public override IParseTree GetChild(int i)
         {
@@ -263,7 +279,11 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             return null;
         }
 
+#if (NET45PLUS && !DOTNETCORE)
+        public virtual IReadOnlyList<ITerminalNode> GetTokens(int ttype)
+#else
         public virtual ITerminalNode[] GetTokens(int ttype)
+#endif
         {
             if (children == null)
             {
@@ -290,17 +310,26 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             {
                 return Collections.EmptyList<ITerminalNode>();
             }
+#if (NET45PLUS && !DOTNETCORE)
+            return tokens;
+#else
             return tokens.ToArray();
+#endif
         }
 
         public virtual T GetRuleContext<T>(int i)
-            where T : erl.Oracle.TnsNames.Antlr4.Runtime.ParserRuleContext
+            where T : Antlr4.Runtime.ParserRuleContext
         {
             return GetChild<T>(i);
         }
 
+#if (NET45PLUS && !DOTNETCORE)
+        public virtual IReadOnlyList<T> GetRuleContexts<T>()
+            where T : Antlr4.Runtime.ParserRuleContext
+#else
         public virtual T[] GetRuleContexts<T>()
-            where T : erl.Oracle.TnsNames.Antlr4.Runtime.ParserRuleContext
+            where T : Antlr4.Runtime.ParserRuleContext
+#endif
         {
             if (children == null)
             {
@@ -322,7 +351,11 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             {
                 return Collections.EmptyList<T>();
             }
+#if (NET45PLUS && !DOTNETCORE)
+            return contexts;
+#else
             return contexts.ToArray();
+#endif
         }
 
         public override int ChildCount
@@ -337,45 +370,36 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         {
             get
             {
-                if (start == null)
+                if (_start == null || _stop == null)
                 {
                     return Interval.Invalid;
                 }
-                if (stop == null || stop.TokenIndex < start.TokenIndex)
-                {
-                    return Interval.Of(start.TokenIndex, start.TokenIndex - 1);
-                }
-                // empty
-                return Interval.Of(start.TokenIndex, stop.TokenIndex);
+                return Interval.Of(_start.TokenIndex, _stop.TokenIndex);
             }
         }
 
-        /// <summary>Get the initial token in this context.</summary>
-        /// <remarks>
-        /// Get the initial token in this context.
-        /// Note that the range from start to stop is inclusive, so for rules that do not consume anything
-        /// (for example, zero length or error productions) this token may exceed stop.
-        /// </remarks>
         public virtual IToken Start
         {
             get
             {
-                return start;
+                return _start;
             }
+			set
+			{
+				_start = value;
+			}
         }
 
-        /// <summary>Get the final token in this context.</summary>
-        /// <remarks>
-        /// Get the final token in this context.
-        /// Note that the range from start to stop is inclusive, so for rules that do not consume anything
-        /// (for example, zero length or error productions) this token may precede start.
-        /// </remarks>
         public virtual IToken Stop
         {
             get
             {
-                return stop;
+                return _stop;
             }
+			set
+			{
+				_stop = value;
+			}
         }
 
         /// <summary>Used for rule context info debugging during parse-time, not so much for ATN debugging</summary>
@@ -383,7 +407,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         {
             List<string> rules = new List<string>(recognizer.GetRuleInvocationStack(this));
             rules.Reverse();
-            return "ParserRuleContext" + rules + "{" + "start=" + start + ", stop=" + stop + '}';
+            return "ParserRuleContext" + rules + "{" + "start=" + _start + ", stop=" + _stop + '}';
         }
     }
 }

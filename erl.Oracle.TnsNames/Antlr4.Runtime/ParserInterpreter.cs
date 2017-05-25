@@ -1,6 +1,7 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,112 +28,27 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
     /// </remarks>
     public class ParserInterpreter : Parser
     {
-        protected internal readonly string grammarFileName;
+        private readonly string _grammarFileName;
 
-        protected internal readonly ATN atn;
+        private readonly ATN _atn;
 
-        /// <summary>
-        /// This identifies StarLoopEntryState's that begin the (...)
-        /// precedence loops of left recursive rules.
-        /// </summary>
         protected internal readonly BitSet pushRecursionContextStates;
 
-        [Obsolete]
-        protected internal readonly string[] tokenNames;
-
-        protected internal readonly string[] ruleNames;
+		private readonly string[] _ruleNames;
 
         [NotNull]
         private readonly IVocabulary vocabulary;
 
-        /// <summary>
-        /// This stack corresponds to the _parentctx, _parentState pair of locals
-        /// that would exist on call stack frames with a recursive descent parser;
-        /// in the generated function for a left-recursive rule you'd see:
-        /// private EContext e(int _p) throws RecognitionException {
-        /// ParserRuleContext _parentctx = _ctx;    // Pair.a
-        /// int _parentState = getState();          // Pair.b
-        /// ...
-        /// </summary>
-        /// <remarks>
-        /// This stack corresponds to the _parentctx, _parentState pair of locals
-        /// that would exist on call stack frames with a recursive descent parser;
-        /// in the generated function for a left-recursive rule you'd see:
-        /// private EContext e(int _p) throws RecognitionException {
-        /// ParserRuleContext _parentctx = _ctx;    // Pair.a
-        /// int _parentState = getState();          // Pair.b
-        /// ...
-        /// }
-        /// Those values are used to create new recursive rule invocation contexts
-        /// associated with left operand of an alt like "expr '*' expr".
-        /// </remarks>
-        protected internal readonly Stack<Tuple<ParserRuleContext, int>> _parentContextStack = new Stack<Tuple<ParserRuleContext, int>>();
-
-        /// <summary>
-        /// We need a map from (decision,inputIndex)-&gt;forced alt for computing ambiguous
-        /// parse trees.
-        /// </summary>
-        /// <remarks>
-        /// We need a map from (decision,inputIndex)-&gt;forced alt for computing ambiguous
-        /// parse trees. For now, we allow exactly one override.
-        /// </remarks>
-        protected internal int overrideDecision = -1;
-
-        protected internal int overrideDecisionInputIndex = -1;
-
-        protected internal int overrideDecisionAlt = -1;
-
-        protected internal bool overrideDecisionReached = false;
-
-        /// <summary>
-        /// What is the current context when we override a decisions?  This tells
-        /// us what the root of the parse tree is when using override
-        /// for an ambiguity/lookahead check.
-        /// </summary>
-        protected internal InterpreterRuleContext overrideDecisionRoot = null;
-
-        protected internal InterpreterRuleContext rootContext;
-
-        /// <summary>
-        /// A copy constructor that creates a new parser interpreter by reusing
-        /// the fields of a previous interpreter.
-        /// </summary>
-        /// <param name="old">The interpreter to copy</param>
-        /// <since>4.5</since>
-        public ParserInterpreter(erl.Oracle.TnsNames.Antlr4.Runtime.ParserInterpreter old)
-            : base(((ITokenStream)old.InputStream))
-        {
-            // latch and only override once; error might trigger infinite loop
-            this.grammarFileName = old.grammarFileName;
-            this.atn = old.atn;
-            this.pushRecursionContextStates = old.pushRecursionContextStates;
-            this.tokenNames = old.tokenNames;
-            this.ruleNames = old.ruleNames;
-            this.vocabulary = old.vocabulary;
-            Interpreter = new ParserATNSimulator(this, atn);
-        }
-
-        [System.ObsoleteAttribute(@"Use ParserInterpreter(string, IVocabulary, System.Collections.Generic.ICollection{E}, erl.Oracle.TnsNames.Antlr4.Runtime.Atn.ATN, ITokenStream) instead.")]
-        public ParserInterpreter(string grammarFileName, IEnumerable<string> tokenNames, IEnumerable<string> ruleNames, ATN atn, ITokenStream input)
-            : this(grammarFileName, erl.Oracle.TnsNames.Antlr4.Runtime.Vocabulary.FromTokenNames(tokenNames.ToArray()), ruleNames, atn, input)
-        {
-        }
+        private readonly Stack<Tuple<ParserRuleContext, int>> _parentContextStack = new Stack<Tuple<ParserRuleContext, int>>();
 
         public ParserInterpreter(string grammarFileName, IVocabulary vocabulary, IEnumerable<string> ruleNames, ATN atn, ITokenStream input)
             : base(input)
         {
-            this.grammarFileName = grammarFileName;
-            this.atn = atn;
-#pragma warning disable 612 // 'fieldName' is obsolete
-            this.tokenNames = new string[atn.maxTokenType];
-            for (int i = 0; i < tokenNames.Length; i++)
-            {
-                tokenNames[i] = vocabulary.GetDisplayName(i);
-            }
-#pragma warning restore 612
-            this.ruleNames = ruleNames.ToArray();
+            this._grammarFileName = grammarFileName;
+            this._atn = atn;
+            this._ruleNames = ruleNames.ToArray();
             this.vocabulary = vocabulary;
-            // identify the ATN states where pushNewRecursionContext() must be called
+            // identify the ATN states where pushNewRecursionContext must be called
             this.pushRecursionContextStates = new BitSet(atn.states.Count);
             foreach (ATNState state in atn.states)
             {
@@ -140,36 +56,20 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 {
                     continue;
                 }
-                if (((StarLoopEntryState)state).precedenceRuleDecision)
+				if (((StarLoopEntryState)state).isPrecedenceDecision)
                 {
                     this.pushRecursionContextStates.Set(state.stateNumber);
                 }
             }
             // get atn simulator that knows how to do predictions
-            Interpreter = new ParserATNSimulator(this, atn);
-        }
-
-        public override void Reset()
-        {
-            base.Reset();
-            overrideDecisionReached = false;
-            overrideDecisionRoot = null;
+            Interpreter = new ParserATNSimulator(this, atn, null, null);
         }
 
         public override ATN Atn
         {
             get
             {
-                return atn;
-            }
-        }
-
-        [Obsolete]
-        public override string[] TokenNames
-        {
-            get
-            {
-                return tokenNames;
+                return _atn;
             }
         }
 
@@ -185,7 +85,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         {
             get
             {
-                return ruleNames;
+                return _ruleNames;
             }
         }
 
@@ -193,15 +93,15 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         {
             get
             {
-                return grammarFileName;
+                return _grammarFileName;
             }
         }
 
         /// <summary>Begin parsing at startRuleIndex</summary>
         public virtual ParserRuleContext Parse(int startRuleIndex)
         {
-            RuleStartState startRuleStartState = atn.ruleToStartState[startRuleIndex];
-            rootContext = CreateInterpreterRuleContext(null, ATNState.InvalidStateNumber, startRuleIndex);
+            RuleStartState startRuleStartState = _atn.ruleToStartState[startRuleIndex];
+            InterpreterRuleContext rootContext = new InterpreterRuleContext(null, ATNState.InvalidStateNumber, startRuleIndex);
             if (startRuleStartState.isPrecedenceRule)
             {
                 EnterRecursionRule(rootContext, startRuleStartState.stateNumber, startRuleIndex, 0);
@@ -218,11 +118,11 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                     case StateType.RuleStop:
                     {
                         // pop; return from rule
-                        if (_ctx.IsEmpty)
+						if (RuleContext.IsEmpty)
                         {
                             if (startRuleStartState.isPrecedenceRule)
                             {
-                                ParserRuleContext result = _ctx;
+								ParserRuleContext result = RuleContext;
                                 Tuple<ParserRuleContext, int> parentContext = _parentContextStack.Pop();
                                 UnrollRecursionContexts(parentContext.Item1);
                                 return result;
@@ -245,10 +145,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                         }
                         catch (RecognitionException e)
                         {
-                            State = atn.ruleToStopState[p.ruleIndex].stateNumber;
+                            State = _atn.ruleToStopState[p.ruleIndex].stateNumber;
                             Context.exception = e;
                             ErrorHandler.ReportError(this, e);
-                            Recover(e);
+                            ErrorHandler.Recover(this, e);
                         }
                         break;
                     }
@@ -258,7 +158,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
 
         public override void EnterRecursionRule(ParserRuleContext localctx, int state, int ruleIndex, int precedence)
         {
-            _parentContextStack.Push(Tuple.Create(_ctx, localctx.invokingState));
+			_parentContextStack.Push(Tuple.Create(RuleContext, localctx.invokingState));
             base.EnterRecursionRule(localctx, state, ruleIndex, precedence);
         }
 
@@ -266,92 +166,95 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         {
             get
             {
-                return atn.states[State];
+                return _atn.states[State];
             }
         }
 
         protected internal virtual void VisitState(ATNState p)
         {
-            int predictedAlt = 1;
+            int edge;
             if (p.NumberOfTransitions > 1)
             {
-                predictedAlt = VisitDecisionState((DecisionState)p);
+                ErrorHandler.Sync(this);
+				edge = Interpreter.AdaptivePredict(TokenStream, ((DecisionState)p).decision, RuleContext);
             }
-            Transition transition = p.Transition(predictedAlt - 1);
+            else
+            {
+                edge = 1;
+            }
+            Transition transition = p.Transition(edge - 1);
             switch (transition.TransitionType)
             {
-                case TransitionType.Epsilon:
+                case TransitionType.EPSILON:
                 {
                     if (pushRecursionContextStates.Get(p.stateNumber) && !(transition.target is LoopEndState))
                     {
-                        // We are at the start of a left recursive rule's (...)* loop
-                        // and we're not taking the exit branch of loop.
-                        InterpreterRuleContext localctx = CreateInterpreterRuleContext(_parentContextStack.Peek().Item1, _parentContextStack.Peek().Item2, _ctx.RuleIndex);
-                        PushNewRecursionContext(localctx, atn.ruleToStartState[p.ruleIndex].stateNumber, _ctx.RuleIndex);
+						InterpreterRuleContext ctx = new InterpreterRuleContext(_parentContextStack.Peek().Item1, _parentContextStack.Peek().Item2, RuleContext.RuleIndex);
+						PushNewRecursionContext(ctx, _atn.ruleToStartState[p.ruleIndex].stateNumber, RuleContext.RuleIndex);
                     }
                     break;
                 }
 
-                case TransitionType.Atom:
+                case TransitionType.ATOM:
                 {
-                    Match(((AtomTransition)transition).label);
+					Match(((AtomTransition)transition).token);
                     break;
                 }
 
-                case TransitionType.Range:
-                case TransitionType.Set:
-                case TransitionType.NotSet:
+                case TransitionType.RANGE:
+                case TransitionType.SET:
+                case TransitionType.NOT_SET:
                 {
-                    if (!transition.Matches(_input.La(1), TokenConstants.MinUserTokenType, 65535))
+                    if (!transition.Matches(TokenStream.LA(1), TokenConstants.MinUserTokenType, 65535))
                     {
-                        RecoverInline();
+						ErrorHandler.RecoverInline(this);
                     }
                     MatchWildcard();
                     break;
                 }
 
-                case TransitionType.Wildcard:
+                case TransitionType.WILDCARD:
                 {
                     MatchWildcard();
                     break;
                 }
 
-                case TransitionType.Rule:
+                case TransitionType.RULE:
                 {
                     RuleStartState ruleStartState = (RuleStartState)transition.target;
                     int ruleIndex = ruleStartState.ruleIndex;
-                    InterpreterRuleContext newctx = CreateInterpreterRuleContext(_ctx, p.stateNumber, ruleIndex);
+					InterpreterRuleContext ctx_1 = new InterpreterRuleContext(RuleContext, p.stateNumber, ruleIndex);
                     if (ruleStartState.isPrecedenceRule)
                     {
-                        EnterRecursionRule(newctx, ruleStartState.stateNumber, ruleIndex, ((RuleTransition)transition).precedence);
+                        EnterRecursionRule(ctx_1, ruleStartState.stateNumber, ruleIndex, ((RuleTransition)transition).precedence);
                     }
                     else
                     {
-                        EnterRule(newctx, transition.target.stateNumber, ruleIndex);
+                        EnterRule(ctx_1, transition.target.stateNumber, ruleIndex);
                     }
                     break;
                 }
 
-                case TransitionType.Predicate:
+                case TransitionType.PREDICATE:
                 {
                     PredicateTransition predicateTransition = (PredicateTransition)transition;
-                    if (!Sempred(_ctx, predicateTransition.ruleIndex, predicateTransition.predIndex))
+					if (!Sempred(RuleContext, predicateTransition.ruleIndex, predicateTransition.predIndex))
                     {
                         throw new FailedPredicateException(this);
                     }
                     break;
                 }
 
-                case TransitionType.Action:
+                case TransitionType.ACTION:
                 {
                     ActionTransition actionTransition = (ActionTransition)transition;
-                    Action(_ctx, actionTransition.ruleIndex, actionTransition.actionIndex);
+					Action(RuleContext, actionTransition.ruleIndex, actionTransition.actionIndex);
                     break;
                 }
 
-                case TransitionType.Precedence:
+                case TransitionType.PRECEDENCE:
                 {
-                    if (!Precpred(_ctx, ((PrecedencePredicateTransition)transition).precedence))
+					if (!Precpred(RuleContext, ((PrecedencePredicateTransition)transition).precedence))
                     {
                         throw new FailedPredicateException(this, string.Format("precpred(_ctx, {0})", ((PrecedencePredicateTransition)transition).precedence));
                     }
@@ -366,43 +269,9 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             State = transition.target.stateNumber;
         }
 
-        /// <summary>
-        /// Method visitDecisionState() is called when the interpreter reaches
-        /// a decision state (instance of DecisionState).
-        /// </summary>
-        /// <remarks>
-        /// Method visitDecisionState() is called when the interpreter reaches
-        /// a decision state (instance of DecisionState). It gives an opportunity
-        /// for subclasses to track interesting things.
-        /// </remarks>
-        protected internal virtual int VisitDecisionState(DecisionState p)
-        {
-            int edge = 1;
-            int predictedAlt;
-            ErrorHandler.Sync(this);
-            int decision = p.decision;
-            if (decision == overrideDecision && _input.Index == overrideDecisionInputIndex && !overrideDecisionReached)
-            {
-                predictedAlt = overrideDecisionAlt;
-                overrideDecisionReached = true;
-            }
-            else
-            {
-                predictedAlt = Interpreter.AdaptivePredict(_input, decision, _ctx);
-            }
-            return predictedAlt;
-        }
-
-        /// <summary>Provide simple "factory" for InterpreterRuleContext's.</summary>
-        /// <since>4.5.1</since>
-        protected internal virtual InterpreterRuleContext CreateInterpreterRuleContext(ParserRuleContext parent, int invokingStateNumber, int ruleIndex)
-        {
-            return new InterpreterRuleContext(parent, invokingStateNumber, ruleIndex);
-        }
-
         protected internal virtual void VisitRuleStopState(ATNState p)
         {
-            RuleStartState ruleStartState = atn.ruleToStartState[p.ruleIndex];
+            RuleStartState ruleStartState = _atn.ruleToStartState[p.ruleIndex];
             if (ruleStartState.isPrecedenceRule)
             {
                 Tuple<ParserRuleContext, int> parentContext = _parentContextStack.Pop();
@@ -413,124 +282,8 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             {
                 ExitRule();
             }
-            RuleTransition ruleTransition = (RuleTransition)atn.states[State].Transition(0);
+            RuleTransition ruleTransition = (RuleTransition)_atn.states[State].Transition(0);
             State = ruleTransition.followState.stateNumber;
-        }
-
-        /// <summary>
-        /// Override this parser interpreters normal decision-making process
-        /// at a particular decision and input token index.
-        /// </summary>
-        /// <remarks>
-        /// Override this parser interpreters normal decision-making process
-        /// at a particular decision and input token index. Instead of
-        /// allowing the adaptive prediction mechanism to choose the
-        /// first alternative within a block that leads to a successful parse,
-        /// force it to take the alternative, 1..n for n alternatives.
-        /// As an implementation limitation right now, you can only specify one
-        /// override. This is sufficient to allow construction of different
-        /// parse trees for ambiguous input. It means re-parsing the entire input
-        /// in general because you're never sure where an ambiguous sequence would
-        /// live in the various parse trees. For example, in one interpretation,
-        /// an ambiguous input sequence would be matched completely in expression
-        /// but in another it could match all the way back to the root.
-        /// s : e '!'? ;
-        /// e : ID
-        /// | ID '!'
-        /// ;
-        /// Here, x! can be matched as (s (e ID) !) or (s (e ID !)). In the first
-        /// case, the ambiguous sequence is fully contained only by the root.
-        /// In the second case, the ambiguous sequences fully contained within just
-        /// e, as in: (e ID !).
-        /// Rather than trying to optimize this and make
-        /// some intelligent decisions for optimization purposes, I settled on
-        /// just re-parsing the whole input and then using
-        /// {link Trees#getRootOfSubtreeEnclosingRegion} to find the minimal
-        /// subtree that contains the ambiguous sequence. I originally tried to
-        /// record the call stack at the point the parser detected and ambiguity but
-        /// left recursive rules create a parse tree stack that does not reflect
-        /// the actual call stack. That impedance mismatch was enough to make
-        /// it it challenging to restart the parser at a deeply nested rule
-        /// invocation.
-        /// Only parser interpreters can override decisions so as to avoid inserting
-        /// override checking code in the critical ALL(*) prediction execution path.
-        /// </remarks>
-        /// <since>4.5</since>
-        public virtual void AddDecisionOverride(int decision, int tokenIndex, int forcedAlt)
-        {
-            overrideDecision = decision;
-            overrideDecisionInputIndex = tokenIndex;
-            overrideDecisionAlt = forcedAlt;
-        }
-
-        public virtual InterpreterRuleContext OverrideDecisionRoot
-        {
-            get
-            {
-                return overrideDecisionRoot;
-            }
-        }
-
-        /// <summary>
-        /// Rely on the error handler for this parser but, if no tokens are consumed
-        /// to recover, add an error node.
-        /// </summary>
-        /// <remarks>
-        /// Rely on the error handler for this parser but, if no tokens are consumed
-        /// to recover, add an error node. Otherwise, nothing is seen in the parse
-        /// tree.
-        /// </remarks>
-        protected internal virtual void Recover(RecognitionException e)
-        {
-            int i = _input.Index;
-            ErrorHandler.Recover(this, e);
-            if (_input.Index == i)
-            {
-                // no input consumed, better add an error node
-                if (e is InputMismatchException)
-                {
-                    InputMismatchException ime = (InputMismatchException)e;
-                    IToken tok = e.OffendingToken;
-                    int expectedTokenType = ime.GetExpectedTokens().MinElement;
-                    // get any element
-                    IToken errToken = TokenFactory.Create(Tuple.Create(tok.TokenSource, tok.TokenSource.InputStream), expectedTokenType, tok.Text, TokenConstants.DefaultChannel, -1, -1, tok.Line, tok.Column);
-                    // invalid start/stop
-                    _ctx.AddErrorNode(errToken);
-                }
-                else
-                {
-                    // NoViableAlt
-                    IToken tok = e.OffendingToken;
-                    IToken errToken = TokenFactory.Create(Tuple.Create(tok.TokenSource, tok.TokenSource.InputStream), TokenConstants.InvalidType, tok.Text, TokenConstants.DefaultChannel, -1, -1, tok.Line, tok.Column);
-                    // invalid start/stop
-                    _ctx.AddErrorNode(errToken);
-                }
-            }
-        }
-
-        protected internal virtual IToken RecoverInline()
-        {
-            return _errHandler.RecoverInline(this);
-        }
-
-        /// <summary>
-        /// Return the root of the parse, which can be useful if the parser
-        /// bails out.
-        /// </summary>
-        /// <remarks>
-        /// Return the root of the parse, which can be useful if the parser
-        /// bails out. You still can access the top node. Note that,
-        /// because of the way left recursive rules add children, it's possible
-        /// that the root will not have any children if the start rule immediately
-        /// called and left recursive rule that fails.
-        /// </remarks>
-        /// <since>4.5.1</since>
-        public virtual InterpreterRuleContext RootContext
-        {
-            get
-            {
-                return rootContext;
-            }
         }
     }
 }

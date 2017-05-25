@@ -1,6 +1,8 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime
@@ -18,9 +20,9 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
     /// <see cref="BufferedTokenStream.GetText()"/>
     /// . The channel filtering is only used for code
     /// accessing tokens via the lookahead methods
-    /// <see cref="BufferedTokenStream.La(int)"/>
+    /// <see cref="BufferedTokenStream.LA(int)"/>
     /// ,
-    /// <see cref="Lt(int)"/>
+    /// <see cref="LT(int)"/>
     /// , and
     /// <see cref="Lb(int)"/>
     /// .</p>
@@ -82,7 +84,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// or have the
         /// <see cref="IToken.Type()"/>
         /// equal to
-        /// <see cref="TokenConstants.Eof"/>
+        /// <see cref="TokenConstants.EOF"/>
         /// will be returned by the
         /// token stream lookahead methods.
         /// </summary>
@@ -121,7 +123,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             return tokens[i];
         }
 
-        public override IToken Lt(int k)
+        public override IToken LT(int k)
         {
             //System.out.println("enter LT("+k+")");
             LazyInit();
@@ -151,6 +153,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         }
 
         /// <summary>Count EOF just once.</summary>
+        /// <remarks>Count EOF just once.</remarks>
         public virtual int GetNumberOfOnChannelTokens()
         {
             int n = 0;
@@ -162,7 +165,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 {
                     n++;
                 }
-                if (t.Type == TokenConstants.Eof)
+                if (t.Type == TokenConstants.EOF)
                 {
                     break;
                 }

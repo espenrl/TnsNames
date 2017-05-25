@@ -1,8 +1,10 @@
-﻿// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+﻿/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
 
@@ -13,7 +15,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen
             return EmptyListImpl<T>.Instance;
         }
 
-        public static ReadOnlyDictionary<TKey, TValue> EmptyMap<TKey, TValue>()
+        public static IDictionary<TKey, TValue> EmptyMap<TKey, TValue>()
         {
             return EmptyMapImpl<TKey, TValue>.Instance;
         }
@@ -23,9 +25,9 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen
             return new ReadOnlyCollection<T>(new T[] { item });
         }
 
-        public static ReadOnlyDictionary<TKey, TValue> SingletonMap<TKey, TValue>(TKey key, TValue value)
+        public static IDictionary<TKey, TValue> SingletonMap<TKey, TValue>(TKey key, TValue value)
         {
-            return new ReadOnlyDictionary<TKey,TValue>(new Dictionary<TKey, TValue> { { key, value } });
+            return new Dictionary<TKey, TValue> { { key, value } };
         }
 
         private static class EmptyListImpl<T>
@@ -35,8 +37,14 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen
 
         private static class EmptyMapImpl<TKey, TValue>
         {
-            public static readonly ReadOnlyDictionary<TKey, TValue> Instance =
-                new ReadOnlyDictionary<TKey, TValue>(new Dictionary<TKey, TValue>());
+            public static IDictionary<TKey, TValue> Instance
+            {
+                get
+                {
+                    return new Dictionary<TKey, TValue>();
+                }
+            }
         }
     }
+
 }

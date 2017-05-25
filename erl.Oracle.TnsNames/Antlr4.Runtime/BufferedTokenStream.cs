@@ -1,9 +1,11 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
@@ -37,7 +39,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// from which tokens for this stream are fetched.
         /// </summary>
         [NotNull]
-        protected internal ITokenSource tokenSource;
+        private ITokenSource _tokenSource;
 
         /// <summary>A collection of all tokens fetched from the token source.</summary>
         /// <remarks>
@@ -62,7 +64,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// <see cref="p"/>
         /// <c>]</c>
         /// should be
-        /// <see cref="Lt(int)">LT(1)</see>
+        /// <see cref="LT(int)">LT(1)</see>
         /// .
         /// <p>This field is set to -1 when the stream is first constructed or when
         /// <see cref="SetTokenSource(ITokenSource)"/>
@@ -77,9 +79,9 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
 
         /// <summary>
         /// Indicates whether the
-        /// <see cref="TokenConstants.Eof"/>
+        /// <see cref="TokenConstants.EOF"/>
         /// token has been fetched from
-        /// <see cref="tokenSource"/>
+        /// <see cref="_tokenSource"/>
         /// and added to
         /// <see cref="tokens"/>
         /// . This field improves
@@ -95,7 +97,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// and
         /// <see cref="p"/>
         /// instead of calling
-        /// <see cref="La(int)"/>
+        /// <see cref="LA(int)"/>
         /// .</li>
         /// <li>
         /// <see cref="Fetch(int)"/>
@@ -112,14 +114,14 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             {
                 throw new ArgumentNullException("tokenSource cannot be null");
             }
-            this.tokenSource = tokenSource;
+            this._tokenSource = tokenSource;
         }
 
         public virtual ITokenSource TokenSource
         {
             get
             {
-                return tokenSource;
+                return _tokenSource;
             }
         }
 
@@ -182,7 +184,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 // not yet initialized
                 skipEofCheck = false;
             }
-            if (!skipEofCheck && La(1) == IntStreamConstants.Eof)
+            if (!skipEofCheck && LA(1) == IntStreamConstants.EOF)
             {
                 throw new InvalidOperationException("cannot consume EOF");
             }
@@ -198,7 +200,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// in tokens has a token.
         /// </summary>
         /// <returns>
-        /// 
+        ///
         /// <see langword="true"/>
         /// if a token is located at index
         /// <paramref name="i"/>
@@ -235,13 +237,13 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             }
             for (int i = 0; i < n; i++)
             {
-                IToken t = tokenSource.NextToken();
+                IToken t = _tokenSource.NextToken();
                 if (t is IWritableToken)
                 {
                     ((IWritableToken)t).TokenIndex = tokens.Count;
                 }
                 tokens.Add(t);
-                if (t.Type == TokenConstants.Eof)
+                if (t.Type == TokenConstants.EOF)
                 {
                     fetchedEOF = true;
                     return i + 1;
@@ -260,6 +262,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         }
 
         /// <summary>Get all tokens from start..stop inclusively.</summary>
+        /// <remarks>Get all tokens from start..stop inclusively.</remarks>
         public virtual IList<IToken> Get(int start, int stop)
         {
             if (start < 0 || stop < 0)
@@ -275,7 +278,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             for (int i = start; i <= stop; i++)
             {
                 IToken t = tokens[i];
-                if (t.Type == TokenConstants.Eof)
+                if (t.Type == TokenConstants.EOF)
                 {
                     break;
                 }
@@ -284,9 +287,9 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             return subset;
         }
 
-        public virtual int La(int i)
+        public virtual int LA(int i)
         {
-            return Lt(i).Type;
+            return LT(i).Type;
         }
 
         protected internal virtual IToken Lb(int k)
@@ -299,7 +302,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         }
 
         [return: NotNull]
-        public virtual IToken Lt(int k)
+        public virtual IToken LT(int k)
         {
             LazyInit();
             if (k == 0)
@@ -362,11 +365,13 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         }
 
         /// <summary>Reset this token stream by setting its token source.</summary>
+        /// <remarks>Reset this token stream by setting its token source.</remarks>
         public virtual void SetTokenSource(ITokenSource tokenSource)
         {
-            this.tokenSource = tokenSource;
+            this._tokenSource = tokenSource;
             tokens.Clear();
             p = -1;
+			this.fetchedEOF = false;
         }
 
         public virtual IList<IToken> GetTokens()
@@ -448,7 +453,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             IToken token = tokens[i];
             while (token.Channel != channel)
             {
-                if (token.Type == TokenConstants.Eof)
+                if (token.Type == TokenConstants.EOF)
                 {
                     return i;
                 }
@@ -491,7 +496,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             while (i >= 0)
             {
                 IToken token = tokens[i];
-                if (token.Type == TokenConstants.Eof || token.Channel == channel)
+                if (token.Type == TokenConstants.EOF || token.Channel == channel)
                 {
                     return i;
                 }
@@ -621,11 +626,12 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         {
             get
             {
-                return tokenSource.SourceName;
+                return _tokenSource.SourceName;
             }
         }
 
         /// <summary>Get the text of all tokens in this buffer.</summary>
+        /// <remarks>Get the text of all tokens in this buffer.</remarks>
         [return: NotNull]
         public virtual string GetText()
         {
@@ -651,7 +657,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             for (int i = start; i <= stop; i++)
             {
                 IToken t = tokens[i];
-                if (t.Type == TokenConstants.Eof)
+                if (t.Type == TokenConstants.EOF)
                 {
                     break;
                 }
@@ -677,6 +683,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         }
 
         /// <summary>Get all tokens from lexer until EOF.</summary>
+        /// <remarks>Get all tokens from lexer until EOF.</remarks>
         public virtual void Fill()
         {
             LazyInit();

@@ -1,26 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TNS names Info", "TnsNamesInfo\TNS names Info.csproj", "{8CD5B0A6-8E7F-4C6F-B487-151054970B23}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{987C93A3-8EDC-4A02-B887-8D258E844DDF}"
-	ProjectSection(SolutionItems) = preProject
-		.nuget\NuGet.Config = .nuget\NuGet.Config
-		.nuget\NuGet.exe = .nuget\NuGet.exe
-		.nuget\NuGet.targets = .nuget\NuGet.targets
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8C197B45-2429-4857-BD2A-24B647264F99}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		global.json = global.json
 		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "erl.Oracle.TnsNames", "erl.Oracle.TnsNames\erl.Oracle.TnsNames.xproj", "{3E7218EE-6AF7-40AF-A89B-9CFBDC23A37E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TNS names Info", "TnsNamesInfo\TNS names Info.csproj", "{8CD5B0A6-8E7F-4C6F-B487-151054970B23}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "erl.Oracle.TnsNames", "erl.Oracle.TnsNames\erl.Oracle.TnsNames.csproj", "{3E7218EE-6AF7-40AF-A89B-9CFBDC23A37E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <VersionPrefix>1.1.0</VersionPrefix>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591;CS3021</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyName>erl.Oracle.TnsNames</AssemblyName>
+  </PropertyGroup>
+
+  <!-- NuGet package -->
+  <PropertyGroup>
+    <Authors>erl</Authors>
+    <Description>Resolve and parse TNS names files.</Description>
+    <PackageId>erl.Oracle.TnsNames</PackageId>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/espenrl/TnsNames</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>

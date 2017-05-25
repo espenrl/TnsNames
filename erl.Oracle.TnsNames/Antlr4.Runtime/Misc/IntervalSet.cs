@@ -1,12 +1,11 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using erl.Oracle.TnsNames.Antlr4.Runtime;
-using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
 {
@@ -39,6 +38,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
         }
 
         /// <summary>The list of sorted, disjoint intervals.</summary>
+        /// <remarks>The list of sorted, disjoint intervals.</remarks>
         protected internal IList<Interval> intervals;
 
         protected internal bool @readonly;
@@ -58,12 +58,12 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
         {
             if (els == null)
             {
-                intervals = new List<Interval>(2);
+                intervals = new ArrayList<Interval>(2);
             }
             else
             {
                 // most sets are 1 or 2 elements
-                intervals = new List<Interval>(els.Length);
+                intervals = new ArrayList<Interval>(els.Length);
                 foreach (int e in els)
                 {
                     Add(e);
@@ -72,6 +72,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
         }
 
         /// <summary>Create a set with a single element, el.</summary>
+        /// <remarks>Create a set with a single element, el.</remarks>
         [return: NotNull]
         public static erl.Oracle.TnsNames.Antlr4.Runtime.Misc.IntervalSet Of(int a)
         {
@@ -230,7 +231,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
 
         /// <summary>
         /// <inheritDoc/>
-        /// 
+        ///
         /// </summary>
         public virtual erl.Oracle.TnsNames.Antlr4.Runtime.Misc.IntervalSet Complement(IIntSet vocabulary)
         {
@@ -368,7 +369,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
 
         /// <summary>
         /// <inheritDoc/>
-        /// 
+        ///
         /// </summary>
         public virtual erl.Oracle.TnsNames.Antlr4.Runtime.Misc.IntervalSet And(IIntSet other)
         {
@@ -470,7 +471,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
 
         /// <summary>
         /// <inheritDoc/>
-        /// 
+        ///
         /// </summary>
         public virtual bool Contains(int el)
         {
@@ -496,31 +497,19 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
 
         /// <summary>
         /// <inheritDoc/>
-        /// 
+        ///
         /// </summary>
         public virtual bool IsNil
         {
             get
             {
-                /*
-                for (ListIterator iter = intervals.listIterator(); iter.hasNext();) {
-                Interval I = (Interval) iter.next();
-                if ( el<I.a ) {
-                break; // list is sorted and el is before this interval; not here
-                }
-                if ( el>=I.a && el<=I.b ) {
-                return true; // found in this interval
-                }
-                }
-                return false;
-                */
                 return intervals == null || intervals.Count == 0;
             }
         }
 
         /// <summary>
         /// <inheritDoc/>
-        /// 
+        ///
         /// </summary>
         public virtual int SingleElement
         {
@@ -539,6 +528,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
         }
 
         /// <summary>Returns the maximum value contained in the set.</summary>
+        /// <remarks>Returns the maximum value contained in the set.</remarks>
         /// <returns>
         /// the maximum value contained in the set. If the set is empty, this
         /// method returns
@@ -559,6 +549,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
         }
 
         /// <summary>Returns the minimum value contained in the set.</summary>
+        /// <remarks>Returns the minimum value contained in the set.</remarks>
         /// <returns>
         /// the minimum value contained in the set. If the set is empty, this
         /// method returns
@@ -578,6 +569,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
         }
 
         /// <summary>Return a list of Interval objects.</summary>
+        /// <remarks>Return a list of Interval objects.</remarks>
         public virtual IList<Interval> GetIntervals()
         {
             return intervals;
@@ -644,7 +636,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
                 int b = I.b;
                 if (a == b)
                 {
-                    if (a == TokenConstants.Eof)
+                    if (a == TokenConstants.EOF)
                     {
                         buf.Append("<EOF>");
                     }
@@ -677,12 +669,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
                 buf.Append("}");
             }
             return buf.ToString();
-        }
-
-        [System.ObsoleteAttribute(@"Use ToString(erl.Oracle.TnsNames.Antlr4.Runtime.IVocabulary) instead.")]
-        public virtual string ToString(string[] tokenNames)
-        {
-            return ToString(Vocabulary.FromTokenNames(tokenNames));
         }
 
         public virtual string ToString(IVocabulary vocabulary)
@@ -729,22 +715,16 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
             return buf.ToString();
         }
 
-        [System.ObsoleteAttribute(@"Use ElementName(erl.Oracle.TnsNames.Antlr4.Runtime.IVocabulary, int) instead.")]
-        protected internal virtual string ElementName(string[] tokenNames, int a)
-        {
-            return ElementName(Vocabulary.FromTokenNames(tokenNames), a);
-        }
-
         [return: NotNull]
         protected internal virtual string ElementName(IVocabulary vocabulary, int a)
         {
-            if (a == TokenConstants.Eof)
+            if (a == TokenConstants.EOF)
             {
                 return "<EOF>";
             }
             else
             {
-                if (a == TokenConstants.Epsilon)
+                if (a == TokenConstants.EPSILON)
                 {
                     return "<EPSILON>";
                 }
@@ -775,9 +755,9 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
             }
         }
 
-        public virtual List<int> ToIntegerList()
+        public virtual ArrayList<int> ToIntegerList()
         {
-            List<int> values = new List<int>(Count);
+            ArrayList<int> values = new ArrayList<int>(Count);
             int n = intervals.Count;
             for (int i = 0; i < n; i++)
             {
@@ -794,7 +774,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
 
         public virtual IList<int> ToList()
         {
-            IList<int> values = new List<int>();
+            IList<int> values = new ArrayList<int>();
             int n = intervals.Count;
             for (int i = 0; i < n; i++)
             {

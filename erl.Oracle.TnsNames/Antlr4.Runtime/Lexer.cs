@@ -1,9 +1,12 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
@@ -19,22 +22,26 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
     /// </remarks>
     public abstract class Lexer : Recognizer<int, LexerATNSimulator>, ITokenSource
     {
-        public const int DefaultMode = 0;
+        public const int DEFAULT_MODE = 0;
 
         public const int DefaultTokenChannel = TokenConstants.DefaultChannel;
 
         public const int Hidden = TokenConstants.HiddenChannel;
 
-        public const int MinCharValue = '\u0000';
+        public const int MinCharValue = 0x0000;
 
-        public const int MaxCharValue = '\uFFFE';
+        public const int MaxCharValue = 0x10FFFF;
 
-        public ICharStream _input;
+        private ICharStream _input;
 
-        protected internal Tuple<ITokenSource, ICharStream> _tokenFactorySourcePair;
+        protected readonly TextWriter Output;
+
+        protected readonly TextWriter ErrorOutput;
+
+		private Tuple<ITokenSource, ICharStream> _tokenFactorySourcePair;
 
         /// <summary>How to create token objects</summary>
-        protected internal ITokenFactory _factory = CommonTokenFactory.Default;
+		private ITokenFactory _factory = CommonTokenFactory.Default;
 
         /// <summary>The goal of all lexer rules/methods is to create a token object.</summary>
         /// <remarks>
@@ -46,7 +53,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// something nonnull so that the auto token emit mechanism will not
         /// emit another token.
         /// </remarks>
-        public IToken _token;
+        private IToken _token;
 
         /// <summary>
         /// What character index in the stream did the current token start at?
@@ -57,30 +64,30 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// Needed, for example, to get the text for current token.  Set at
         /// the start of nextToken.
         /// </remarks>
-        public int _tokenStartCharIndex = -1;
+        private int _tokenStartCharIndex = -1;
 
         /// <summary>The line on which the first character of the token resides</summary>
-        public int _tokenStartLine;
+		private int _tokenStartLine;
 
         /// <summary>The character position of first character within the line</summary>
-        public int _tokenStartCharPositionInLine;
+		private int _tokenStartColumn;
 
         /// <summary>Once we see EOF on char stream, next token will be EOF.</summary>
         /// <remarks>
         /// Once we see EOF on char stream, next token will be EOF.
         /// If you have DONE : EOF ; then you see DONE EOF.
         /// </remarks>
-        public bool _hitEOF;
+		private bool _hitEOF;
 
         /// <summary>The channel number for the current token</summary>
-        public int _channel;
+		private int _channel;
 
         /// <summary>The token type for the current token</summary>
-        public int _type;
+		private int _type;
 
-        public readonly List<int> _modeStack = new List<int>();
+        private readonly Stack<int> _modeStack = new Stack<int>();
 
-        public int _mode = erl.Oracle.TnsNames.Antlr4.Runtime.Lexer.DefaultMode;
+		private int _mode = erl.Oracle.TnsNames.Antlr4.Runtime.Lexer.DEFAULT_MODE;
 
         /// <summary>
         /// You can set the text for the current token to override what is in
@@ -90,11 +97,15 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// You can set the text for the current token to override what is in
         /// the input char buffer.  Use setText() or can set this instance var.
         /// </remarks>
-        public string _text;
+		private string _text;
 
-        public Lexer(ICharStream input)
+        public Lexer(ICharStream input) : this(input, Console.Out, Console.Error) { }
+
+        public Lexer(ICharStream input, TextWriter output, TextWriter errorOutput)
         {
             this._input = input;
+            this.Output = output;
+            this.ErrorOutput = errorOutput;
             this._tokenFactorySourcePair = Tuple.Create((ITokenSource)this, input);
         }
 
@@ -110,11 +121,11 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             _type = TokenConstants.InvalidType;
             _channel = TokenConstants.DefaultChannel;
             _tokenStartCharIndex = -1;
-            _tokenStartCharPositionInLine = -1;
+            _tokenStartColumn = -1;
             _tokenStartLine = -1;
             _text = null;
             _hitEOF = false;
-            _mode = erl.Oracle.TnsNames.Antlr4.Runtime.Lexer.DefaultMode;
+            _mode = erl.Oracle.TnsNames.Antlr4.Runtime.Lexer.DEFAULT_MODE;
             _modeStack.Clear();
             Interpreter.Reset();
         }
@@ -123,6 +134,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// Return a token from this source; i.e., match a token on the char
         /// stream.
         /// </summary>
+        /// <remarks>
+        /// Return a token from this source; i.e., match a token on the char
+        /// stream.
+        /// </remarks>
         public virtual IToken NextToken()
         {
             if (_input == null)
@@ -144,7 +159,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                     _token = null;
                     _channel = TokenConstants.DefaultChannel;
                     _tokenStartCharIndex = _input.Index;
-                    _tokenStartCharPositionInLine = Interpreter.Column;
+                    _tokenStartColumn = Interpreter.Column;
                     _tokenStartLine = Interpreter.Line;
                     _text = null;
                     do
@@ -165,7 +180,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                             Recover(e);
                             ttype = TokenTypes.Skip;
                         }
-                        if (_input.La(1) == IntStreamConstants.Eof)
+                        if (_input.LA(1) == IntStreamConstants.EOF)
                         {
                             _hitEOF = true;
                         }
@@ -223,7 +238,7 @@ outer_continue: ;
 
         public virtual void PushMode(int m)
         {
-            _modeStack.Add(_mode);
+            _modeStack.Push(_mode);
             Mode(m);
         }
 
@@ -234,8 +249,7 @@ outer_continue: ;
                 throw new InvalidOperationException();
             }
 
-            int mode = _modeStack[_modeStack.Count - 1];
-            _modeStack.RemoveAt(_modeStack.Count - 1);
+            int mode = _modeStack.Pop();
             Mode(mode);
             return _mode;
         }
@@ -283,7 +297,7 @@ outer_continue: ;
         {
             get
             {
-                return (ICharStream)InputStream;
+				return _input;
             }
         }
 
@@ -316,7 +330,7 @@ outer_continue: ;
         /// </remarks>
         public virtual IToken Emit()
         {
-            IToken t = _factory.Create(_tokenFactorySourcePair, _type, _text, _channel, _tokenStartCharIndex, CharIndex - 1, _tokenStartLine, _tokenStartCharPositionInLine);
+            IToken t = _factory.Create(_tokenFactorySourcePair, _type, _text, _channel, _tokenStartCharIndex, CharIndex - 1, _tokenStartLine, _tokenStartColumn);
             Emit(t);
             return t;
         }
@@ -324,8 +338,8 @@ outer_continue: ;
         public virtual IToken EmitEOF()
         {
             int cpos = Column;
-            int line = Line;
-            IToken eof = _factory.Create(_tokenFactorySourcePair, TokenConstants.Eof, null, TokenConstants.DefaultChannel, _input.Index, _input.Index - 1, line, cpos);
+			int line = Line;
+            IToken eof = _factory.Create(_tokenFactorySourcePair, TokenConstants.EOF, null, TokenConstants.DefaultChannel, _input.Index, _input.Index - 1, line, cpos);
             Emit(eof);
             return eof;
         }
@@ -365,14 +379,46 @@ outer_continue: ;
             }
         }
 
+		public virtual int TokenStartCharIndex
+		{
+			get
+			{
+				return _tokenStartCharIndex;
+			}
+		}
+
+		public virtual int TokenStartLine
+		{
+			get
+			{
+				return _tokenStartLine;
+			}
+		}
+
+		public virtual int TokenStartColumn
+		{
+			get
+			{
+				return _tokenStartColumn;
+			}
+		}
+
         /// <summary>
         /// Return the text matched so far for the current token or any text
         /// override.
         /// </summary>
+        /// <remarks>
+        /// Return the text matched so far for the current token or any text
+        /// override.
+        /// </remarks>
         /// <summary>
         /// Set the complete text of this token; it wipes any previous changes to the
         /// text.
         /// </summary>
+        /// <remarks>
+        /// Set the complete text of this token; it wipes any previous changes to the
+        /// text.
+        /// </remarks>
         public virtual string Text
         {
             get
@@ -391,6 +437,7 @@ outer_continue: ;
         }
 
         /// <summary>Override if emitting multiple tokens.</summary>
+        /// <remarks>Override if emitting multiple tokens.</remarks>
         public virtual IToken Token
         {
             get
@@ -430,7 +477,41 @@ outer_continue: ;
             }
         }
 
-        public virtual string[] ModeNames
+        public virtual Stack<int> ModeStack
+        {
+            get
+            {
+                return _modeStack;
+            }
+        }
+
+        public virtual int CurrentMode
+        {
+            get
+            {
+                return _mode;
+            }
+            set
+            {
+                int mode = value;
+                _mode = mode;
+            }
+        }
+
+        public virtual bool HitEOF
+        {
+            get
+            {
+                return _hitEOF;
+            }
+            set
+            {
+                bool hitEOF = value;
+                _hitEOF = hitEOF;
+            }
+        }
+
+        public virtual string[] ChannelNames
         {
             get
             {
@@ -438,17 +519,7 @@ outer_continue: ;
             }
         }
 
-        /// <summary>
-        /// Used to print out token names like ID during debugging and
-        /// error reporting.
-        /// </summary>
-        /// <remarks>
-        /// Used to print out token names like ID during debugging and
-        /// error reporting.  The generated parsers implement a method
-        /// that overrides this to point to their String[] tokenNames.
-        /// </remarks>
-        [Obsolete]
-        public override string[] TokenNames
+        public virtual string[] ModeNames
         {
             get
             {
@@ -465,7 +536,7 @@ outer_continue: ;
         {
             IList<IToken> tokens = new List<IToken>();
             IToken t = NextToken();
-            while (t.Type != TokenConstants.Eof)
+            while (t.Type != TokenConstants.EOF)
             {
                 tokens.Add(t);
                 t = NextToken();
@@ -475,7 +546,7 @@ outer_continue: ;
 
         public virtual void Recover(LexerNoViableAltException e)
         {
-            if (_input.La(1) != IntStreamConstants.Eof)
+            if (_input.LA(1) != IntStreamConstants.EOF)
             {
                 // skip a char and try again
                 Interpreter.Consume(_input);
@@ -487,25 +558,26 @@ outer_continue: ;
             string text = _input.GetText(Interval.Of(_tokenStartCharIndex, _input.Index));
             string msg = "token recognition error at: '" + GetErrorDisplay(text) + "'";
             IAntlrErrorListener<int> listener = ErrorListenerDispatch;
-            listener.SyntaxError(this, 0, _tokenStartLine, _tokenStartCharPositionInLine, msg, e);
+            listener.SyntaxError(ErrorOutput, this, 0, _tokenStartLine, _tokenStartColumn, msg, e);
         }
 
         public virtual string GetErrorDisplay(string s)
         {
             StringBuilder buf = new StringBuilder();
-            foreach (char c in s.ToCharArray())
-            {
-                buf.Append(GetErrorDisplay(c));
+            for (var i = 0; i < s.Length; ) {
+                var codePoint = Char.ConvertToUtf32(s, i);
+                buf.Append(GetErrorDisplay(codePoint));
+                i += (codePoint > 0xFFFF) ? 2 : 1;
             }
             return buf.ToString();
         }
 
         public virtual string GetErrorDisplay(int c)
         {
-            string s = ((char)c).ToString();
+            string s;
             switch (c)
             {
-                case TokenConstants.Eof:
+                case TokenConstants.EOF:
                 {
                     s = "<EOF>";
                     break;
@@ -526,6 +598,12 @@ outer_continue: ;
                 case '\r':
                 {
                     s = "\\r";
+                    break;
+                }
+
+                default:
+                {
+                    s = Char.ConvertFromUtf32(c);
                     break;
                 }
             }

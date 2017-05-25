@@ -1,6 +1,8 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Dfa;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
@@ -8,6 +10,7 @@ using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 namespace erl.Oracle.TnsNames.Antlr4.Runtime
 {
     /// <summary>How to emit recognition errors for parsers.</summary>
+    /// <remarks>How to emit recognition errors for parsers.</remarks>
     public interface IParserErrorListener : IAntlrErrorListener<IToken>
     {
         /// <summary>
@@ -30,7 +33,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// viable alternatives identified by the prediction algorithm. When
         /// <paramref name="ambigAlts"/>
         /// is null, use
-        /// <see cref="erl.Oracle.TnsNames.Antlr4.Runtime.Atn.ATNConfigSet.RepresentedAlternatives()"/>
+        /// <see cref="erl.Oracle.TnsNames.Antlr4.Runtime.Atn.ATNConfigSet.GetAlts()"/>
         /// to obtain the represented
         /// alternatives from the
         /// <paramref name="configs"/>
@@ -51,7 +54,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// least the <em>minimum</em> potentially viable alternative is truly
         /// viable.</p>
         /// <p>When the
-        /// <see cref="erl.Oracle.TnsNames.Antlr4.Runtime.Atn.PredictionMode.LlExactAmbigDetection"/>
+        /// <see cref="erl.Oracle.TnsNames.Antlr4.Runtime.Atn.PredictionMode.LL_EXACT_AMBIG_DETECTION"/>
         /// prediction
         /// mode is used, the parser is required to identify exact ambiguities so
         /// <paramref name="exact"/>
@@ -64,14 +67,14 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// <param name="startIndex">the input index where the decision started</param>
         /// <param name="stopIndex">the input input where the ambiguity was identified</param>
         /// <param name="exact">
-        /// 
+        ///
         /// <see langword="true"/>
         /// if the ambiguity is exactly known, otherwise
         /// <see langword="false"/>
         /// . This is always
         /// <see langword="true"/>
         /// when
-        /// <see cref="erl.Oracle.TnsNames.Antlr4.Runtime.Atn.PredictionMode.LlExactAmbigDetection"/>
+        /// <see cref="erl.Oracle.TnsNames.Antlr4.Runtime.Atn.PredictionMode.LL_EXACT_AMBIG_DETECTION"/>
         /// is used.
         /// </param>
         /// <param name="ambigAlts">

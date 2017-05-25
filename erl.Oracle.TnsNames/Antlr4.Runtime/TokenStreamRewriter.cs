@@ -1,12 +1,12 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
-using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime
 {
@@ -79,7 +79,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
     /// ...
     /// rewriter.insertAfter(t, "text to put after t");}
     /// rewriter.insertAfter(u, "text after u");}
-    /// System.out.println(rewriter.getText());
+    /// System.out.println(tokens.toString());
     /// </pre>
     /// <p>
     /// You can also have multiple "instruction streams" and get multiple rewrites
@@ -87,10 +87,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
     /// that name again when printing the buffer. This could be useful for generating
     /// a C file and also its header file--all from the same buffer:</p>
     /// <pre>
-    /// rewriter.insertAfter("pass1", t, "text to put after t");}
-    /// rewriter.insertAfter("pass2", u, "text after u");}
-    /// System.out.println(rewriter.getText("pass1"));
-    /// System.out.println(rewriter.getText("pass2"));
+    /// tokens.insertAfter("pass1", t, "text to put after t");}
+    /// tokens.insertAfter("pass2", u, "text after u");}
+    /// System.out.println(tokens.toString("pass1"));
+    /// System.out.println(tokens.toString("pass2"));
     /// </pre>
     /// <p>
     /// If you don't use named rewrite streams, a "default" stream is used as the
@@ -112,6 +112,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             protected internal int instructionIndex;
 
             /// <summary>Token buffer index.</summary>
+            /// <remarks>Token buffer index.</remarks>
             protected internal int index;
 
             protected internal object text;
@@ -159,7 +160,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             public override int Execute(StringBuilder buf)
             {
                 buf.Append(text);
-                if (tokens.Get(index).Type != TokenConstants.Eof)
+                if (tokens.Get(index).Type != TokenConstants.EOF)
                 {
                     buf.Append(tokens.Get(index).Text);
                 }
@@ -171,6 +172,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// I'm going to try replacing range from x..y with (y-x)+1 ReplaceOp
         /// instructions.
         /// </summary>
+        /// <remarks>
+        /// I'm going to try replacing range from x..y with (y-x)+1 ReplaceOp
+        /// instructions.
+        /// </remarks>
         internal class ReplaceOp : TokenStreamRewriter.RewriteOperation
         {
             protected internal int lastIndex;
@@ -420,19 +425,13 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// Return the text from the original tokens altered per the
         /// instructions given to this rewriter.
         /// </summary>
+        /// <remarks>
+        /// Return the text from the original tokens altered per the
+        /// instructions given to this rewriter.
+        /// </remarks>
         public virtual string GetText()
         {
             return GetText(DefaultProgramName, Interval.Of(0, tokens.Size - 1));
-        }
-
-        /// <summary>
-        /// Return the text from the original tokens altered per the
-        /// instructions given to this rewriter in programName.
-        /// </summary>
-        /// <since>4.5</since>
-        public virtual string GetText(string programName)
-        {
-            return GetText(programName, Interval.Of(0, tokens.Size - 1));
         }
 
         /// <summary>
@@ -492,7 +491,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                 if (op == null)
                 {
                     // no operation at that index, just dump token
-                    if (t.Type != TokenConstants.Eof)
+                    if (t.Type != TokenConstants.EOF)
                     {
                         buf.Append(t.Text);
                     }
@@ -623,9 +622,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
                         // kill first delete
                         rop.index = Math.Min(prevRop.index, rop.index);
                         rop.lastIndex = Math.Max(prevRop.lastIndex, rop.lastIndex);
-#if !PORTABLE
                         System.Console.Out.WriteLine("new rop " + rop);
-#endif
                     }
                     else
                     {

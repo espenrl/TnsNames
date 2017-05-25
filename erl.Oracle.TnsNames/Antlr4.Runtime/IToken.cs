@@ -1,6 +1,8 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime
@@ -10,15 +12,22 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
     /// (so we can ignore tabs), token channel, index, and source from which
     /// we obtained this token.
     /// </summary>
+    /// <remarks>
+    /// A token has properties: text, type, line, character position in the line
+    /// (so we can ignore tabs), token channel, index, and source from which
+    /// we obtained this token.
+    /// </remarks>
     public interface IToken
     {
         /// <summary>Get the text of the token.</summary>
+        /// <remarks>Get the text of the token.</remarks>
         string Text
         {
             get;
         }
 
         /// <summary>Get the token type of the token.</summary>
+        /// <remarks>Get the token type of the token.</remarks>
         int Type
         {
             get;
@@ -70,6 +79,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// The starting character index of the token
         /// This method is optional; return -1 if not implemented.
         /// </summary>
+        /// <remarks>
+        /// The starting character index of the token
+        /// This method is optional; return -1 if not implemented.
+        /// </remarks>
         int StartIndex
         {
             get;
@@ -114,11 +127,15 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// During lookahead operations, this "token" signifies we hit rule end ATN state
         /// and did not follow it despite needing to.
         /// </summary>
-        public const int Epsilon = -2;
+        /// <remarks>
+        /// During lookahead operations, this "token" signifies we hit rule end ATN state
+        /// and did not follow it despite needing to.
+        /// </remarks>
+        public const int EPSILON = -2;
 
         public const int MinUserTokenType = 1;
 
-        public const int Eof = IntStreamConstants.Eof;
+        public const int EOF = IntStreamConstants.EOF;
 
         /// <summary>
         /// All tokens go to the parser (unless skip() is called in that rule)
@@ -135,6 +152,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// Anything on different channel than DEFAULT_CHANNEL is not parsed
         /// by parser.
         /// </summary>
+        /// <remarks>
+        /// Anything on different channel than DEFAULT_CHANNEL is not parsed
+        /// by parser.
+        /// </remarks>
         public const int HiddenChannel = 1;
 
         /// <summary>

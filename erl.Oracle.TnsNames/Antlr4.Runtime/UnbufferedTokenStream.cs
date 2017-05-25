@@ -1,8 +1,10 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Text;
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
@@ -10,7 +12,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
 {
     public class UnbufferedTokenStream : ITokenStream
     {
-        protected internal ITokenSource tokenSource;
+        private ITokenSource _tokenSource;
 
         /// <summary>A moving window buffer of the data being scanned.</summary>
         /// <remarks>
@@ -105,7 +107,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
 
         public UnbufferedTokenStream(ITokenSource tokenSource, int bufferSize)
         {
-            this.tokenSource = tokenSource;
+            this.TokenSource = tokenSource;
             this.tokens = new IToken[bufferSize];
             n = 0;
             Fill(1);
@@ -122,7 +124,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             return tokens[i - bufferStartIndex];
         }
 
-        public virtual IToken Lt(int i)
+        public virtual IToken LT(int i)
         {
             if (i == -1)
             {
@@ -136,23 +138,27 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
             }
             if (index >= n)
             {
-                System.Diagnostics.Debug.Assert(n > 0 && tokens[n - 1].Type == TokenConstants.Eof);
+                System.Diagnostics.Debug.Assert(n > 0 && tokens[n - 1].Type == TokenConstants.EOF);
                 return tokens[n - 1];
             }
             return tokens[index];
         }
 
-        public virtual int La(int i)
+        public virtual int LA(int i)
         {
-            return Lt(i).Type;
+            return LT(i).Type;
         }
 
         public virtual ITokenSource TokenSource
         {
             get
             {
-                return tokenSource;
+                return _tokenSource;
             }
+			set
+			{
+				_tokenSource = value;
+			}
         }
 
         [return: NotNull]
@@ -179,7 +185,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
 
         public virtual void Consume()
         {
-            if (La(1) == TokenConstants.Eof)
+            if (LA(1) == TokenConstants.EOF)
             {
                 throw new InvalidOperationException("cannot consume EOF");
             }
@@ -240,11 +246,11 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         {
             for (int i = 0; i < n; i++)
             {
-                if (this.n > 0 && tokens[this.n - 1].Type == TokenConstants.Eof)
+                if (this.n > 0 && tokens[this.n - 1].Type == TokenConstants.EOF)
                 {
                     return i;
                 }
-                IToken t = tokenSource.NextToken();
+                IToken t = TokenSource.NextToken();
                 Add(t);
             }
             return n;
@@ -365,7 +371,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         {
             get
             {
-                return tokenSource.SourceName;
+                return TokenSource.SourceName;
             }
         }
 

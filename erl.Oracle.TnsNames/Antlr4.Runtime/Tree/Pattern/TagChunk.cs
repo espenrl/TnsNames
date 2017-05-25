@@ -1,9 +1,11 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
+using erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
 {
@@ -113,6 +115,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
         }
 
         /// <summary>Get the tag for this chunk.</summary>
+        /// <remarks>Get the tag for this chunk.</remarks>
         /// <returns>The tag for the chunk.</returns>
         [NotNull]
         public string Tag
@@ -124,6 +127,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
         }
 
         /// <summary>Get the label, if any, assigned to this chunk.</summary>
+        /// <remarks>Get the label, if any, assigned to this chunk.</remarks>
         /// <returns>
         /// The label assigned to this chunk, or
         /// <see langword="null"/>

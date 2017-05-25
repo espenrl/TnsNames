@@ -1,6 +1,7 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,10 +13,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
     {
         public static string Join<T>(string separator, IEnumerable<T> items)
         {
-#if NET40PLUS
-            return string.Join(separator, items);
-#else
-            List<string> elements = new List<string>();
+            ArrayList<string> elements = new ArrayList<string>();
             foreach (T item in items)
             {
                 if (item == null)
@@ -25,7 +23,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
             }
 
             return string.Join(separator, elements.ToArray());
-#endif
         }
 
         public static int NumNonnull(object[] data)
@@ -129,34 +126,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Misc
                 m[keys[i]] = i;
             }
             return m;
-        }
-
-        public static char[] ToCharArray(List<int> data)
-        {
-            if (data == null)
-            {
-                return null;
-            }
-            char[] cdata = new char[data.Count];
-            for (int i = 0; i < data.Count; i++)
-            {
-                cdata[i] = (char)data[i];
-            }
-            return cdata;
-        }
-
-        /// <since>4.5</since>
-        [return: NotNull]
-        public static IntervalSet ToSet(BitSet bits)
-        {
-            IntervalSet s = new IntervalSet();
-            int i = bits.NextSetBit(0);
-            while (i >= 0)
-            {
-                s.Add(i);
-                i = bits.NextSetBit(i + 1);
-            }
-            return s;
         }
     }
 }

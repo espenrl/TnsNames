@@ -1,6 +1,8 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
+using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
@@ -19,17 +21,17 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime
         /// Get the
         /// <see cref="IToken"/>
         /// instance associated with the value returned by
-        /// <see cref="IIntStream.La(int)">LA(k)</see>
+        /// <see cref="IIntStream.LA(int)">LA(k)</see>
         /// . This method has the same pre- and post-conditions as
-        /// <see cref="IIntStream.La(int)"/>
+        /// <see cref="IIntStream.LA(int)"/>
         /// . In addition, when the preconditions of this method
         /// are met, the return value is non-null and the value of
         /// <c>LT(k).getType()==LA(k)</c>
         /// .
         /// </summary>
-        /// <seealso cref="IIntStream.La(int)"/>
+        /// <seealso cref="IIntStream.LA(int)"/>
         [return: NotNull]
-        IToken Lt(int k);
+        IToken LT(int k);
 
         /// <summary>
         /// Gets the

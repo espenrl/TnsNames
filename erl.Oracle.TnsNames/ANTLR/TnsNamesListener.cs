@@ -33,7 +33,7 @@ namespace erl.Oracle.TnsNames.ANTLR
         {
             string keyword = context.keyword().GetText();
 
-            bool isRootLevel = context.parent is TnsNamesParser.Configuration_fileContext;
+            bool isRootLevel = context.Parent is TnsNamesParser.Configuration_fileContext;
 
             // Verify and add TNS name
             if (isRootLevel && !string.Equals("IFILE", keyword, StringComparison.OrdinalIgnoreCase))
@@ -158,7 +158,7 @@ namespace erl.Oracle.TnsNames.ANTLR
             string keyword = parameterContext.keyword().GetText();
             var text = context.scalar.content.Text;
 
-            bool isRootLevel = parameterContext.parent is TnsNamesParser.Configuration_fileContext;
+            bool isRootLevel = parameterContext.Parent is TnsNamesParser.Configuration_fileContext;
             bool isConnectDataLevel = _levelStack.Any() && string.Equals("CONNECT_DATA", _levelStack.First());
             bool isAddressLevel = _levelStack.Any() && string.Equals("ADDRESS", _levelStack.First());
 
@@ -216,7 +216,7 @@ namespace erl.Oracle.TnsNames.ANTLR
             _levelStack.Push(keyword);
 
 
-            bool isRootLevel = parameterContext.parent is TnsNamesParser.Configuration_fileContext;
+            bool isRootLevel = parameterContext.Parent is TnsNamesParser.Configuration_fileContext;
 
             // TNS name node
             if (isRootLevel && !string.Equals(keyword, "IFILE", StringComparison.OrdinalIgnoreCase))

@@ -1,9 +1,11 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
+using erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern;
 
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
 {
@@ -11,6 +13,10 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
     /// Represents a span of raw text (concrete syntax) between tags in a tree
     /// pattern string.
     /// </summary>
+    /// <remarks>
+    /// Represents a span of raw text (concrete syntax) between tags in a tree
+    /// pattern string.
+    /// </remarks>
     internal class TextChunk : Chunk
     {
         /// <summary>
@@ -45,6 +51,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Tree.Pattern
         }
 
         /// <summary>Gets the raw text of this chunk.</summary>
+        /// <remarks>Gets the raw text of this chunk.</remarks>
         /// <returns>The text of the chunk.</returns>
         [NotNull]
         public string Text

@@ -1,10 +1,10 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
-using erl.Oracle.TnsNames.Antlr4.Runtime;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
@@ -12,6 +12,7 @@ using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 namespace erl.Oracle.TnsNames.Antlr4.Runtime.Dfa
 {
     /// <summary>A DFA walker that knows how to dump them to serialized strings.</summary>
+    /// <remarks>A DFA walker that knows how to dump them to serialized strings.</remarks>
     public class DFASerializer
     {
         [NotNull]
@@ -26,12 +27,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Dfa
         [Nullable]
         internal readonly ATN atn;
 
-        [System.ObsoleteAttribute(@"Use DFASerializer(DFA, erl.Oracle.TnsNames.Antlr4.Runtime.IVocabulary) instead.")]
-        public DFASerializer(DFA dfa, string[] tokenNames)
-            : this(dfa, Vocabulary.FromTokenNames(tokenNames), null, null)
-        {
-        }
-
         public DFASerializer(DFA dfa, IVocabulary vocabulary)
             : this(dfa, vocabulary, null, null)
         {
@@ -39,12 +34,6 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Dfa
 
         public DFASerializer(DFA dfa, IRecognizer parser)
             : this(dfa, parser != null ? parser.Vocabulary : Vocabulary.EmptyVocabulary, parser != null ? parser.RuleNames : null, parser != null ? parser.Atn : null)
-        {
-        }
-
-        [System.ObsoleteAttribute(@"Use DFASerializer(DFA, erl.Oracle.TnsNames.Antlr4.Runtime.IVocabulary, string[], erl.Oracle.TnsNames.Antlr4.Runtime.Atn.ATN) instead.")]
-        public DFASerializer(DFA dfa, string[] tokenNames, string[] ruleNames, ATN atn)
-            : this(dfa, Vocabulary.FromTokenNames(tokenNames), ruleNames, atn)
         {
         }
 
@@ -58,7 +47,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Dfa
 
         public override string ToString()
         {
-            if (dfa.s0.Get() == null)
+            if (dfa.s0 == null)
             {
                 return null;
             }
@@ -66,79 +55,41 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Dfa
             if (dfa.states != null)
             {
                 List<DFAState> states = new List<DFAState>(dfa.states.Values);
-                states.Sort(new _IComparer_103());
+				states.Sort((x,y)=>x.stateNumber - y.stateNumber);
                 foreach (DFAState s in states)
                 {
-                    IEnumerable<KeyValuePair<int, DFAState>> edges = s.EdgeMap;
-                    IEnumerable<KeyValuePair<int, DFAState>> contextEdges = s.ContextEdgeMap;
-                    foreach (KeyValuePair<int, DFAState> entry in edges)
-                    {
-                        if ((entry.Value == null || entry.Value == ATNSimulator.Error) && !s.IsContextSymbol(entry.Key))
-                        {
-                            continue;
-                        }
-                        bool contextSymbol = false;
-                        buf.Append(GetStateString(s)).Append("-").Append(GetEdgeLabel(entry.Key)).Append("->");
-                        if (s.IsContextSymbol(entry.Key))
-                        {
-                            buf.Append("!");
-                            contextSymbol = true;
-                        }
-                        DFAState t = entry.Value;
-                        if (t != null && t.stateNumber != int.MaxValue)
-                        {
-                            buf.Append(GetStateString(t)).Append('\n');
-                        }
-                        else
-                        {
-                            if (contextSymbol)
-                            {
-                                buf.Append("ctx\n");
-                            }
-                        }
-                    }
-                    if (s.IsContextSensitive)
-                    {
-                        foreach (KeyValuePair<int, DFAState> entry_1 in contextEdges)
-                        {
-                            buf.Append(GetStateString(s)).Append("-").Append(GetContextLabel(entry_1.Key)).Append("->").Append(GetStateString(entry_1.Value)).Append("\n");
-                        }
-                    }
-                }
+					int n = s.edges != null ? s.edges.Length : 0;
+					for (int i = 0; i < n; i++)
+					{
+						DFAState t = s.edges[i];
+						if (t != null && t.stateNumber != int.MaxValue)
+						{
+							buf.Append(GetStateString(s));
+							String label = GetEdgeLabel(i);
+							buf.Append("-");
+							buf.Append(label);
+							buf.Append("->");
+							buf.Append(GetStateString(t));
+							buf.Append('\n');
+						}
+					}
+	            }
             }
             string output = buf.ToString();
             if (output.Length == 0)
             {
                 return null;
             }
-            //return Utils.sortLinesInString(output);
             return output;
         }
 
-        private sealed class _IComparer_103 : IComparer<DFAState>
-        {
-            public _IComparer_103()
-            {
-            }
 
-            public int Compare(DFAState o1, DFAState o2)
-            {
-                return o1.stateNumber - o2.stateNumber;
-            }
-        }
 
         protected internal virtual string GetContextLabel(int i)
         {
-            if (i == PredictionContext.EmptyFullStateKey)
+			if (i == PredictionContext.EMPTY_RETURN_STATE)
             {
-                return "ctx:EMPTY_FULL";
-            }
-            else
-            {
-                if (i == PredictionContext.EmptyLocalStateKey)
-                {
-                    return "ctx:EMPTY_LOCAL";
-                }
+                return "ctx:EMPTY";
             }
             if (atn != null && i > 0 && i <= atn.states.Count)
             {
@@ -154,41 +105,29 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Dfa
 
         protected internal virtual string GetEdgeLabel(int i)
         {
-            return vocabulary.GetDisplayName(i);
+            return vocabulary.GetDisplayName(i - 1);
         }
 
         internal virtual string GetStateString(DFAState s)
         {
-            if (s == ATNSimulator.Error)
+			if (s == ATNSimulator.ERROR)
             {
                 return "ERROR";
             }
-            int n = s.stateNumber;
-            string stateStr = "s" + n;
-            if (s.IsAcceptState)
-            {
-                if (s.predicates != null)
-                {
-                    stateStr = ":s" + n + "=>" + Arrays.ToString(s.predicates);
-                }
-                else
-                {
-                    stateStr = ":s" + n + "=>" + s.Prediction;
-                }
-            }
-            if (s.IsContextSensitive)
-            {
-                stateStr += "*";
-                foreach (ATNConfig config in s.configs)
-                {
-                    if (config.ReachesIntoOuterContext)
-                    {
-                        stateStr += "*";
-                        break;
-                    }
-                }
-            }
-            return stateStr;
+
+			int n = s.stateNumber;
+			string baseStateStr = (s.isAcceptState ? ":" : "") + "s" + n + (s.requiresFullContext ? "^" : "");
+			if ( s.isAcceptState ) {
+				if ( s.predicates!=null ) {
+					return baseStateStr + "=>" + Arrays.ToString(s.predicates);
+				}
+				else {
+					return baseStateStr + "=>" + s.prediction;
+				}
+			}
+			else {
+				return baseStateStr;
+			}
         }
     }
 }

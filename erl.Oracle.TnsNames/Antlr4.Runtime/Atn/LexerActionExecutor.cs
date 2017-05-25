@@ -1,7 +1,9 @@
-// Copyright (c) Terence Parr, Sam Harwell. All Rights Reserved.
-// Licensed under the BSD License. See LICENSE.txt in the project root for license information.
-
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+ * Use of this file is governed by the BSD 3-clause license that
+ * can be found in the LICENSE.txt file in the project root.
+ */
 using erl.Oracle.TnsNames.Antlr4.Runtime;
+using erl.Oracle.TnsNames.Antlr4.Runtime.Atn;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Misc;
 using erl.Oracle.TnsNames.Antlr4.Runtime.Sharpen;
 
@@ -163,6 +165,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
         }
 
         /// <summary>Gets the lexer actions to be executed by this executor.</summary>
+        /// <remarks>Gets the lexer actions to be executed by this executor.</remarks>
         /// <returns>The lexer actions to be executed by this executor.</returns>
         [NotNull]
         public virtual ILexerAction[] LexerActions
@@ -182,7 +185,7 @@ namespace erl.Oracle.TnsNames.Antlr4.Runtime.Atn
         /// <see cref="erl.Oracle.TnsNames.Antlr4.Runtime.IIntStream.Seek(int)"/>
         /// to set the position of the
         /// <paramref name="input"/>
-        /// 
+        ///
         /// <see cref="erl.Oracle.TnsNames.Antlr4.Runtime.ICharStream"/>
         /// prior to calling
         /// <see cref="ILexerAction.Execute(erl.Oracle.TnsNames.Antlr4.Runtime.Lexer)"/>
