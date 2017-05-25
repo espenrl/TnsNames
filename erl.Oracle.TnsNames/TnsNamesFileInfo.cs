@@ -11,7 +11,7 @@ namespace erl.Oracle.TnsNames
     [PublicAPI]
     public sealed class TnsNamesFileInfo
     {
-        internal TnsNamesFileInfo(string filepath, TnsNamesSource source, TnsNamesFileInfo parent = null, int sourceOrder = 1)
+        public TnsNamesFileInfo(string filepath, TnsNamesSource source, TnsNamesFileInfo parent = null, int sourceOrder = 1)
         {
             if (filepath == null) throw new ArgumentNullException(nameof(filepath));
 
