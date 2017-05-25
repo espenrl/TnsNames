@@ -102,21 +102,22 @@ namespace erl.Oracle.TnsNames
         {
             if (tnsNamesFileInfo == null) throw new ArgumentNullException(nameof(tnsNamesFileInfo));
 
-            var fileStream = new FileStream(tnsNamesFileInfo.Filepath, FileMode.Open);
-            var inputStream = new AntlrInputStream(fileStream);
-            var lexer = new TnsNamesLexer(inputStream);
-            var commonTokenStream = new CommonTokenStream(lexer);
-            var parser = new TnsNamesParser(commonTokenStream);
+            var listener = new TnsNamesListener();
+            using (var fileStream = new FileStream(tnsNamesFileInfo.Filepath, FileMode.Open, FileAccess.Read))
+            {
+                var inputStream = new AntlrInputStream(fileStream);
+                var lexer = new TnsNamesLexer(inputStream);
+                var commonTokenStream = new CommonTokenStream(lexer);
+                var parser = new TnsNamesParser(commonTokenStream);
 
 #if RELEASE
-            lexer.ErrorListeners.Clear();
-            parser.ErrorListeners.Clear();
+                lexer.ErrorListeners.Clear();
+                parser.ErrorListeners.Clear();
 #endif
 
-            var listener = new TnsNamesListener();
-            var walker = new ParseTreeWalker();
-            var parse = parser.configuration_file();
-            walker.Walk(listener, parse);
+                var parse = parser.configuration_file();
+                ParseTreeWalker.Default.Walk(listener, parse);
+            }
 
             // Convert internal representation to public API representation
             var tnsNames = from tnsNameNode in listener.TnsItems
